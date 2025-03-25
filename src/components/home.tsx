@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import Layout from "./layout";
+import Layout from "./layout/index";
 import { useToast } from "./ui/use-toast";
 import { usePersona } from "@/contexts/PersonaContext";
 

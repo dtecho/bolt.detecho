@@ -46,12 +46,14 @@ interface PersonaManagerProps {
   onEditPersona?: (persona: PersonaConfig) => void;
   onCreateNewPersona?: () => void;
   isDashboard?: boolean;
+  onBack?: () => void;
 }
 
 const PersonaManager = ({
   onEditPersona,
   onCreateNewPersona,
   isDashboard = false,
+  onBack,
 }: PersonaManagerProps) => {
   const {
     savedPersonas,
@@ -123,6 +125,9 @@ const PersonaManager = ({
   const handleBackToList = () => {
     setIsEditing(false);
     setSelectedPersona(null);
+    if (onBack) {
+      onBack();
+    }
   };
 
   const handleSharePersona = (persona: PersonaConfig) => {
