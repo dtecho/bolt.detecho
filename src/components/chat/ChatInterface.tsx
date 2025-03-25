@@ -23,10 +23,8 @@ import MessageInput from "./MessageInput";
 import { usePersona } from "@/contexts/PersonaContext";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  vs,
-  vscDarkPlus,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vs } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface Message {
   id: string;

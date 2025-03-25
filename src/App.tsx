@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./components/home";
 import { useRoutes } from "react-router-dom";
-import routes from "tempo-routes";
+import * as tempoRoutes from "tempo-routes";
+const routes = tempoRoutes.default || tempoRoutes;
 import { PersonaProvider } from "./contexts/PersonaContext";
 
 function App() {

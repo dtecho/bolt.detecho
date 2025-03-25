@@ -23,6 +23,7 @@ import {
   Sparkles,
   Filter,
   SlidersHorizontal,
+  FileJson,
 } from "lucide-react";
 import { usePersona, PersonaConfig } from "@/contexts/PersonaContext";
 import { Input } from "@/components/ui/input";
@@ -252,7 +253,7 @@ const PersonaManager = ({
                     size="icon"
                     onClick={handleImportClick}
                   >
-                    <Upload className="h-4 w-4" />
+                    <FileJson className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>

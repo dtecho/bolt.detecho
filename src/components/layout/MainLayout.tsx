@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import Sidebar from "../sidebar/Sidebar";
 import ChatInterface from "@/components/chat/ChatInterface";
 import { cn } from "@/lib/utils";
+import Header from "./Header";
+import Footer from "./Footer";
+import ContentArea from "./ContentArea";
 
 interface MainLayoutProps {
   children?: React.ReactNode;
@@ -9,6 +12,8 @@ interface MainLayoutProps {
   onThemeChange?: (isDark: boolean) => void;
   accentColor?: string;
   onAccentColorChange?: (color: string) => void;
+  showHeader?: boolean;
+  showFooter?: boolean;
 }
 
 const MainLayout = ({
@@ -17,6 +22,8 @@ const MainLayout = ({
   onThemeChange = () => {},
   accentColor = "#0ea5e9",
   onAccentColorChange = () => {},
+  showHeader = false,
+  showFooter = false,
 }: MainLayoutProps) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -25,7 +32,7 @@ const MainLayout = ({
   };
 
   const handleOpenPersonaEditor = () => {
-    setSidebarCollapsed(false); // Ensure sidebar is open
+    setSidebarCollapsed(false); // Ensure sidebar is open when persona editor is requested
   };
 
   return (
@@ -34,10 +41,6 @@ const MainLayout = ({
       <Sidebar
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={handleToggleSidebar}
-        isDarkMode={isDarkMode}
-        onThemeChange={onThemeChange}
-        accentColor={accentColor}
-        onAccentColorChange={onAccentColorChange}
       />
 
       {/* Main Content */}
@@ -47,11 +50,20 @@ const MainLayout = ({
           sidebarCollapsed ? "ml-16" : "ml-80",
         )}
       >
-        <ChatInterface
-          onOpenPersonaEditor={handleOpenPersonaEditor}
-          className="flex-1"
-        />
-        {children}
+        {showHeader && <Header onToggleSidebar={handleToggleSidebar} />}
+
+        <ContentArea className="flex-1">
+          {children ? (
+            children
+          ) : (
+            <ChatInterface
+              onOpenPersonaEditor={handleOpenPersonaEditor}
+              className="h-full"
+            />
+          )}
+        </ContentArea>
+
+        {showFooter && <Footer />}
       </div>
     </div>
   );
