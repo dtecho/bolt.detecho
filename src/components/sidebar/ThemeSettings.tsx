@@ -12,6 +12,27 @@ import {
 } from "@/components/ui/tooltip";
 import KeyboardShortcutsDialog from "@/components/ui/keyboard-shortcuts-dialog";
 
+// Polyfill for markup_templating if needed
+if (typeof window !== "undefined") {
+  // Create a global object for markup_templating if it doesn't exist
+  if (!window.hasOwnProperty("require_markup_templating")) {
+    Object.defineProperty(window, "require_markup_templating", {
+      value: {},
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  // Ensure the object has all necessary properties
+  const markupTemplating = window.require_markup_templating;
+  if (typeof markupTemplating === "object") {
+    // Add any required properties/methods that might be missing
+    if (!markupTemplating.hasOwnProperty("default")) {
+      markupTemplating.default = {};
+    }
+  }
+}
+
 interface ThemeSettingsProps {
   isDarkMode?: boolean;
   onThemeChange?: (isDark: boolean) => void;
