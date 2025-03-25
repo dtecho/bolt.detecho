@@ -131,6 +131,7 @@ const MessageHistory = ({
       const isCopied = copiedStates[blockId];
 
       // Map common language aliases to their proper names
+      // Only include languages that are definitely supported by the library
       const languageMap: Record<string, string> = {
         js: "javascript",
         ts: "typescript",
@@ -163,9 +164,11 @@ const MessageHistory = ({
         tsx: "tsx",
       };
 
-      // Get the normalized language name
+      // Get the normalized language name with fallback to 'text' for unsupported languages
+      const lowerCaseLanguage = block.language.toLowerCase();
       const normalizedLanguage =
-        languageMap[block.language.toLowerCase()] || block.language;
+        languageMap[lowerCaseLanguage] ||
+        (lowerCaseLanguage === "gcode" ? "text" : block.language);
 
       parts.push(
         <div

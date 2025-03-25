@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+export interface PersonaVersion {
+  timestamp: number;
+  data: Omit<PersonaConfig, "versions" | "id">;
+  notes?: string;
+}
+
 export interface PersonaConfig {
   id?: string;
   name: string;
@@ -13,6 +19,8 @@ export interface PersonaConfig {
   useEmojis: boolean;
   useCodeExamples: boolean;
   customInstructions: string;
+  lastModified?: number;
+  versionNumber?: number;
 }
 
 export const defaultPersona: PersonaConfig = {
@@ -36,16 +44,22 @@ interface PersonaContextType {
   resetPersona: () => void;
   isCustomized: boolean;
   savedPersonas: PersonaConfig[];
-  savePersona: (persona: PersonaConfig) => void;
+  savePersona: (persona: PersonaConfig) => string;
   deletePersona: (personaId: string) => void;
   loadPersona: (personaId: string) => void;
   exportPersona: (personaId: string) => void;
   importPersona: (jsonData: string) => boolean;
   generateShareableLink: (personaId: string) => string;
   importFromShareableLink: (encodedData: string) => boolean;
+  getPersonaVersions: (personaId: string) => PersonaVersion[];
+  savePersonaVersion: (personaId: string, notes?: string) => void;
+  restorePersonaVersion: (personaId: string, timestamp: number) => void;
+  deletePersonaVersion: (personaId: string, timestamp: number) => void;
 }
 
 const STORAGE_KEY = "bolt_diy_saved_personas";
+const VERSION_STORAGE_KEY = "bolt_diy_persona_versions";
+const MAX_VERSIONS_PER_PERSONA = 20;
 
 const PersonaContext = createContext<PersonaContextType | undefined>(undefined);
 
@@ -55,6 +69,9 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
   const [persona, setPersonaState] = useState<PersonaConfig>(defaultPersona);
   const [isCustomized, setIsCustomized] = useState(false);
   const [savedPersonas, setSavedPersonas] = useState<PersonaConfig[]>([]);
+  const [personaVersions, setPersonaVersions] = useState<
+    Record<string, PersonaVersion[]>
+  >({});
 
   // Load saved personas from localStorage on initial render
   useEffect(() => {
@@ -65,6 +82,17 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
         setSavedPersonas(parsed);
       } catch (error) {
         console.error("Failed to parse saved personas:", error);
+      }
+    }
+
+    // Load version histories
+    const versionsJson = localStorage.getItem(VERSION_STORAGE_KEY);
+    if (versionsJson) {
+      try {
+        const parsed = JSON.parse(versionsJson);
+        setPersonaVersions(parsed);
+      } catch (error) {
+        console.error("Failed to parse persona versions:", error);
       }
     }
   }, []);
@@ -80,10 +108,13 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const savePersona = (personaToSave: PersonaConfig) => {
+    const now = Date.now();
     // Generate a unique ID if one doesn't exist
     const personaWithId = {
       ...personaToSave,
-      id: personaToSave.id || `persona_${Date.now()}`,
+      id: personaToSave.id || `persona_${now}`,
+      lastModified: now,
+      versionNumber: (personaToSave.versionNumber || 0) + 1,
     };
 
     // Check if this persona already exists (by ID)
@@ -96,6 +127,9 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
       // Update existing persona
       updatedPersonas = [...savedPersonas];
       updatedPersonas[existingIndex] = personaWithId;
+
+      // Automatically create a version when updating an existing persona
+      savePersonaVersion(personaWithId.id || "");
     } else {
       // Add new persona
       updatedPersonas = [...savedPersonas, personaWithId];
@@ -109,7 +143,7 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
     setPersonaState(personaWithId);
     setIsCustomized(true);
 
-    return personaWithId.id;
+    return personaWithId.id || "";
   };
 
   const deletePersona = (personaId: string) => {
@@ -206,6 +240,87 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // Get all versions for a specific persona
+  const getPersonaVersions = (personaId: string): PersonaVersion[] => {
+    return personaVersions[personaId] || [];
+  };
+
+  // Save the current state of a persona as a new version
+  const savePersonaVersion = (personaId: string, notes?: string) => {
+    if (!personaId) return;
+
+    const personaToVersion = savedPersonas.find((p) => p.id === personaId);
+    if (!personaToVersion) return;
+
+    // Create a version object without the ID and version-specific fields
+    const { id, lastModified, versionNumber, ...versionData } =
+      personaToVersion;
+
+    const newVersion: PersonaVersion = {
+      timestamp: Date.now(),
+      data: versionData,
+      notes,
+    };
+
+    // Get existing versions or initialize empty array
+    const existingVersions = personaVersions[personaId] || [];
+
+    // Add new version at the beginning (newest first)
+    let updatedVersions = [newVersion, ...existingVersions];
+
+    // Limit the number of versions stored
+    if (updatedVersions.length > MAX_VERSIONS_PER_PERSONA) {
+      updatedVersions = updatedVersions.slice(0, MAX_VERSIONS_PER_PERSONA);
+    }
+
+    // Update state and localStorage
+    const newVersions = { ...personaVersions, [personaId]: updatedVersions };
+    setPersonaVersions(newVersions);
+    localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(newVersions));
+  };
+
+  // Restore a persona to a previous version
+  const restorePersonaVersion = (personaId: string, timestamp: number) => {
+    const versions = personaVersions[personaId] || [];
+    const versionToRestore = versions.find((v) => v.timestamp === timestamp);
+
+    if (!versionToRestore) return;
+
+    // Find the current persona
+    const currentPersona = savedPersonas.find((p) => p.id === personaId);
+    if (!currentPersona) return;
+
+    // Create a new persona object with the version data but keep the ID
+    const restoredPersona: PersonaConfig = {
+      ...versionToRestore.data,
+      id: personaId,
+      lastModified: Date.now(),
+      versionNumber: (currentPersona.versionNumber || 0) + 1,
+    };
+
+    // Save the restored persona
+    savePersona(restoredPersona);
+
+    // If this is the currently active persona, update it
+    if (persona.id === personaId) {
+      setPersonaState(restoredPersona);
+    }
+  };
+
+  // Delete a specific version
+  const deletePersonaVersion = (personaId: string, timestamp: number) => {
+    const versions = personaVersions[personaId] || [];
+    if (versions.length === 0) return;
+
+    // Filter out the version to delete
+    const updatedVersions = versions.filter((v) => v.timestamp !== timestamp);
+
+    // Update state and localStorage
+    const newVersions = { ...personaVersions, [personaId]: updatedVersions };
+    setPersonaVersions(newVersions);
+    localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(newVersions));
+  };
+
   return (
     <PersonaContext.Provider
       value={{
@@ -221,6 +336,10 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
         importPersona,
         generateShareableLink,
         importFromShareableLink,
+        getPersonaVersions,
+        savePersonaVersion,
+        restorePersonaVersion,
+        deletePersonaVersion,
       }}
     >
       {children}

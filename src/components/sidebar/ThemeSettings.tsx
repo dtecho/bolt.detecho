@@ -4,7 +4,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Moon, Sun, Palette, RotateCcw, Keyboard } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import KeyboardShortcutsDialog from "@/components/ui/keyboard-shortcuts-dialog";
 
 interface ThemeSettingsProps {
@@ -167,8 +172,8 @@ const ThemeSettings = ({
             ]}
           />
         </div>
-        
-        {/* Dark Mode Toggle */
+
+        {/* Dark Mode Toggle */}
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
           <div className="flex items-center space-x-2">
             {darkMode ? (
