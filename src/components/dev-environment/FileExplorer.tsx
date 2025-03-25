@@ -22,9 +22,9 @@ import {
   Plus,
   FileText,
   FileCode,
-  FileJson,
-  FileCss,
-  FileHtml,
+  FileJson as FileJsonIcon,
+  FileCog,
+  FileType,
   Trash2,
   Copy,
   Edit,
@@ -63,13 +63,13 @@ const FileExplorer: React.FC<FileExplorerProps> = ({
 
     switch (extension) {
       case "html":
-        return <FileHtml className="h-4 w-4 mr-2 text-orange-500" />;
+        return <FileType className="h-4 w-4 mr-2 text-orange-500" />;
       case "css":
-        return <FileCss className="h-4 w-4 mr-2 text-blue-500" />;
+        return <FileCog className="h-4 w-4 mr-2 text-blue-500" />;
       case "js":
         return <FileCode className="h-4 w-4 mr-2 text-yellow-500" />;
       case "json":
-        return <FileJson className="h-4 w-4 mr-2 text-green-500" />;
+        return <FileJsonIcon className="h-4 w-4 mr-2 text-green-500" />;
       case "md":
         return <FileText className="h-4 w-4 mr-2 text-gray-500" />;
       default:

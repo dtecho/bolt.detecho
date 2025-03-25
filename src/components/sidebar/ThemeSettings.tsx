@@ -77,12 +77,12 @@ export const applyAccentColor = (color: string): void => {
   document.documentElement.style.setProperty("--accent-color", color);
 };
 
-const ThemeSettings = ({
+function ThemeSettings({
   isDarkMode = false,
   onThemeChange = () => {},
   accentColor = ACCENT_COLORS[0].value,
   onAccentColorChange = () => {},
-}: ThemeSettingsProps) => {
+}: ThemeSettingsProps) {
   const { toast } = useToast();
 
   // Initialize from localStorage if available
@@ -276,6 +276,6 @@ const ThemeSettings = ({
       </div>
     </div>
   );
-};
+}
 
 export default ThemeSettings;
