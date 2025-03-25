@@ -11,7 +11,7 @@ import { json } from "@codemirror/lang-json";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import FileExplorer from "./FileExplorer";
 import Terminal from "./Terminal";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import {
   Save,
   Play,

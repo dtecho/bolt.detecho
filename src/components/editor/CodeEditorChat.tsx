@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";

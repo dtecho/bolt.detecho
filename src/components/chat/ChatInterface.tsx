@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import Badge from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,

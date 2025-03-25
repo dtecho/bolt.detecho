@@ -1,6 +1,7 @@
 import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+// Make sure we're using the correct version
 import { tempo } from "tempo-devtools/dist/vite";
 
 const conditionalPlugins = [];
@@ -52,6 +53,7 @@ export default defineConfig({
     hmr: {
       overlay: false,
       clientPort: 443, // Add this line to fix HMR issues
+      host: true,
     },
   },
   cacheDir: "node_modules/.vite",

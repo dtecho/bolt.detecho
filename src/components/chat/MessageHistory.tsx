@@ -9,7 +9,7 @@ import {
   vs,
   vscDarkPlus,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,

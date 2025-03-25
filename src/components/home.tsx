@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Layout from "./layout/index";
 import { useToast } from "./ui/use-toast";
 import { usePersona } from "@/contexts/PersonaContext";
-import { Button } from "./ui/button";
+import Button from "./ui/button";
 import { Link } from "react-router-dom";
 import { Code, MessageSquare, Settings } from "lucide-react";
 import {
