@@ -1,11 +1,13 @@
 import { Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./components/home";
+import Settings from "./pages/Settings";
 import { useRoutes } from "react-router-dom";
 import * as tempoRoutes from "tempo-routes";
 const routes = tempoRoutes.default || tempoRoutes;
 import { PersonaProvider, usePersona } from "./contexts/PersonaContext";
 import { useToast } from "./components/ui/use-toast";
+import CodeEditorChat from "./components/editor/CodeEditorChat";
 
 function AppContent() {
   const location = useLocation();
@@ -56,6 +58,8 @@ function AppContent() {
       {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/code-editor" element={<CodeEditorChat />} />
         {/* Add this line to allow Tempo to capture routes before any catchall */}
         {import.meta.env.VITE_TEMPO === "true" && (
           <Route path="/tempobook/*" element={<></>} />

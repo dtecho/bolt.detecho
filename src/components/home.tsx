@@ -2,6 +2,16 @@ import React, { useState, useEffect, useCallback } from "react";
 import Layout from "./layout/index";
 import { useToast } from "./ui/use-toast";
 import { usePersona } from "@/contexts/PersonaContext";
+import { Button } from "./ui/button";
+import { Link } from "react-router-dom";
+import { Code, MessageSquare, Settings } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 const Home = () => {
   const { toast } = useToast();
@@ -72,10 +82,69 @@ const Home = () => {
       onThemeChange={handleThemeChange}
       accentColor={accentColor}
       onAccentColorChange={handleAccentColorChange}
-      showHeader={false}
+      showHeader={true}
       showFooter={false}
     >
-      {/* The Layout component handles the structure with sidebar and chat interface */}
+      <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-6">Bolt.DIY Workbench</h1>
+        <p className="text-lg text-muted-foreground mb-8">
+          Your AI-powered development environment with integrated tools and
+          features.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="hover:shadow-md transition-all">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <MessageSquare className="mr-2 h-5 w-5 text-primary" />
+                Chat Interface
+              </CardTitle>
+              <CardDescription>
+                Interact with the AI assistant to get help with your projects.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/">Open Chat</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-all">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Code className="mr-2 h-5 w-5 text-primary" />
+                Code Editor
+              </CardTitle>
+              <CardDescription>
+                Edit code with AI assistance and real-time suggestions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/code-editor">Open Code Editor</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-all">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Settings className="mr-2 h-5 w-5 text-primary" />
+                Settings
+              </CardTitle>
+              <CardDescription>
+                Configure your preferences, API keys, and persona settings.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/settings">Open Settings</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </Layout>
   );
 };

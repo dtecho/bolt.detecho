@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Settings, Users, MessageSquare } from "lucide-react";
+import { Home, Settings, Users, MessageSquare, Code } from "lucide-react";
 
 interface NavigationItem {
   label: string;
@@ -26,6 +26,11 @@ const defaultNavItems: NavigationItem[] = [
     label: "Chat",
     path: "/chat",
     icon: <MessageSquare className="h-5 w-5" />,
+  },
+  {
+    label: "Code Editor",
+    path: "/code-editor",
+    icon: <Code className="h-5 w-5" />,
   },
   {
     label: "Personas",
