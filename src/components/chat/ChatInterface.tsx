@@ -252,9 +252,9 @@ const ChatInterface = React.memo(
   ({
     onOpenPersonaEditor = () => {},
     className = "",
-    enableComparison = false,
+    enableComparison = true,
   }: ChatInterfaceProps) => {
-    const { persona, isCustomized, savedPersonas } = usePersona();
+    const { persona, isCustomized, savedPersonas, loadPersona } = usePersona();
     const [messages, setMessages] = useState<Message[]>([
       {
         id: "1",
@@ -266,10 +266,54 @@ const ChatInterface = React.memo(
       },
     ]);
 
-    // Update welcome message when persona changes
+    // Update all messages when persona changes
     useEffect(() => {
-      if (messages.length === 1 && messages[0].id === "1") {
-        try {
+      try {
+        // Always update the welcome message
+        if (messages.length > 0) {
+          const welcomeMessage = generatePersonaResponse("Hello", persona);
+          const updatedMessages = [...messages];
+
+          // Update the first message (welcome message)
+          updatedMessages[0] = {
+            id: "1",
+            content: welcomeMessage,
+            sender: "assistant",
+            timestamp: new Date(),
+            isMarkdown: true,
+          };
+
+          // Regenerate all assistant responses based on the new persona
+          for (let i = 1; i < updatedMessages.length; i++) {
+            if (updatedMessages[i].sender === "assistant") {
+              // Find the preceding user message to generate a response to
+              let userMessageIndex = i - 1;
+              while (
+                userMessageIndex >= 0 &&
+                updatedMessages[userMessageIndex].sender !== "user"
+              ) {
+                userMessageIndex--;
+              }
+
+              if (userMessageIndex >= 0) {
+                const userMessage = updatedMessages[userMessageIndex].content;
+                const newResponse = generatePersonaResponse(
+                  userMessage,
+                  persona,
+                );
+
+                updatedMessages[i] = {
+                  ...updatedMessages[i],
+                  content: newResponse,
+                  timestamp: new Date(),
+                };
+              }
+            }
+          }
+
+          setMessages(updatedMessages);
+        } else {
+          // If no messages, create a welcome message
           const welcomeMessage = generatePersonaResponse("Hello", persona);
           setMessages([
             {
@@ -280,9 +324,14 @@ const ChatInterface = React.memo(
               isMarkdown: true,
             },
           ]);
-        } catch (error) {
-          console.error("Error generating welcome message:", error);
-          // Fallback to a simple welcome message
+        }
+      } catch (error) {
+        console.error("Error updating messages with new persona:", error);
+        // Only reset the welcome message if there's an error
+        if (
+          messages.length === 0 ||
+          (messages.length === 1 && messages[0].id === "1")
+        ) {
           setMessages([
             {
               id: "1",
@@ -299,6 +348,7 @@ const ChatInterface = React.memo(
 
     const [activeTab, setActiveTab] = useState("chat");
     const [isComparisonMode, setIsComparisonMode] = useState(false);
+    const [isGeneratingComparison, setIsGeneratingComparison] = useState(false);
     const [comparisonPersona, setComparisonPersona] =
       useState<PersonaConfig | null>(null);
     const [comparisonMessages, setComparisonMessages] = useState<Message[]>([]);
@@ -330,6 +380,69 @@ const ChatInterface = React.memo(
         newDarkMode ? "dark" : "light",
       );
     };
+
+    // Function to generate welcome message for comparison persona
+    const generateComparisonWelcomeMessage = React.useCallback(
+      (selectedPersona: PersonaConfig) => {
+        setIsGeneratingComparison(true);
+        try {
+          // Clear previous messages if switching personas
+          setComparisonMessages([]);
+
+          // Generate welcome message
+          setTimeout(() => {
+            try {
+              const welcomeMessage = generatePersonaResponse(
+                "Hello",
+                selectedPersona,
+              );
+              setComparisonMessages([
+                {
+                  id: "comparison-1",
+                  content: welcomeMessage,
+                  sender: "assistant",
+                  timestamp: new Date(),
+                  isMarkdown: true,
+                },
+              ]);
+            } catch (error) {
+              console.error("Error generating welcome message:", error);
+              setComparisonMessages([
+                {
+                  id: "comparison-1",
+                  content: `Hello! I'm ${selectedPersona.name}. How can I help you today?`,
+                  sender: "assistant",
+                  timestamp: new Date(),
+                  isMarkdown: true,
+                },
+              ]);
+            } finally {
+              setIsGeneratingComparison(false);
+            }
+          }, 300);
+        } catch (error) {
+          console.error("Error in generateComparisonWelcomeMessage:", error);
+          setIsGeneratingComparison(false);
+        }
+      },
+      [],
+    );
+
+    // Effect to sync comparison messages when toggling comparison mode off and on
+    React.useEffect(() => {
+      if (
+        isComparisonMode &&
+        comparisonPersona &&
+        comparisonMessages.length === 0
+      ) {
+        generateComparisonWelcomeMessage(comparisonPersona);
+      }
+    }, [
+      isComparisonMode,
+      comparisonPersona,
+      comparisonMessages.length,
+      generateComparisonWelcomeMessage,
+    ]);
 
     const handleSendMessage = React.useCallback(
       (content: string) => {
@@ -461,12 +574,30 @@ const ChatInterface = React.memo(
 
           <TabsContent value="chat" className="flex-1 flex flex-col p-0 m-0">
             {enableComparison && (
-              <div className="flex items-center justify-between border-b p-2 bg-muted/20">
+              <div className="flex items-center justify-between border-b p-3 bg-muted/20">
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="comparison-mode"
                     checked={isComparisonMode}
-                    onCheckedChange={setIsComparisonMode}
+                    onCheckedChange={(checked) => {
+                      setIsComparisonMode(checked);
+                      if (
+                        checked &&
+                        !comparisonPersona &&
+                        savedPersonas.length > 0
+                      ) {
+                        // Auto-select the first available persona that's not the current one
+                        const firstDifferentPersona = savedPersonas.find(
+                          (p) => p.id !== persona.id,
+                        );
+                        if (firstDifferentPersona) {
+                          setComparisonPersona(firstDifferentPersona);
+                          generateComparisonWelcomeMessage(
+                            firstDifferentPersona,
+                          );
+                        }
+                      }
+                    }}
                   />
                   <label
                     htmlFor="comparison-mode"
@@ -477,9 +608,9 @@ const ChatInterface = React.memo(
                 </div>
                 {isComparisonMode && (
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm">Compare with:</span>
+                    <span className="text-sm font-medium">Compare with:</span>
                     <select
-                      className="text-sm border rounded p-1 bg-background"
+                      className="text-sm border rounded-md p-1.5 bg-background focus:ring-1 focus:ring-primary"
                       value={comparisonPersona?.id || ""}
                       onChange={(e) => {
                         const selectedPersona = savedPersonas.find(
@@ -487,44 +618,14 @@ const ChatInterface = React.memo(
                         );
                         if (selectedPersona) {
                           setComparisonPersona(selectedPersona);
-
-                          // Generate welcome message for comparison persona
-                          if (comparisonMessages.length === 0) {
-                            try {
-                              const welcomeMessage = generatePersonaResponse(
-                                "Hello",
-                                selectedPersona,
-                              );
-                              setComparisonMessages([
-                                {
-                                  id: "comparison-1",
-                                  content: welcomeMessage,
-                                  sender: "assistant",
-                                  timestamp: new Date(),
-                                  isMarkdown: true,
-                                },
-                              ]);
-                            } catch (error) {
-                              console.error(
-                                "Error generating welcome message:",
-                                error,
-                              );
-                              setComparisonMessages([
-                                {
-                                  id: "comparison-1",
-                                  content:
-                                    "Hello! I'm your comparison assistant.",
-                                  sender: "assistant",
-                                  timestamp: new Date(),
-                                  isMarkdown: true,
-                                },
-                              ]);
-                            }
-                          }
+                          generateComparisonWelcomeMessage(selectedPersona);
                         }
                       }}
+                      disabled={isGeneratingComparison}
                     >
-                      <option value="">Select a persona</option>
+                      <option value="" disabled>
+                        Select a persona
+                      </option>
                       {savedPersonas
                         .filter((p) => p.id !== persona.id)
                         .map((p) => (
@@ -532,7 +633,18 @@ const ChatInterface = React.memo(
                             {p.name}
                           </option>
                         ))}
+                      {savedPersonas.filter((p) => p.id !== persona.id)
+                        .length === 0 && (
+                        <option value="" disabled>
+                          No other personas available
+                        </option>
+                      )}
                     </select>
+                    {isGeneratingComparison && (
+                      <span className="text-xs text-muted-foreground animate-pulse">
+                        Generating...
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -562,6 +674,7 @@ const ChatInterface = React.memo(
                   };
 
                   setComparisonMessages((prev) => [...prev, userMessage]);
+                  setIsGeneratingComparison(true);
 
                   // Generate response with comparison persona
                   setTimeout(() => {
@@ -597,6 +710,8 @@ const ChatInterface = React.memo(
                         isMarkdown: true,
                       };
                       setComparisonMessages((prev) => [...prev, errorMessage]);
+                    } finally {
+                      setIsGeneratingComparison(false);
                     }
                   }, 1200); // Slightly delayed from the main response
                 }

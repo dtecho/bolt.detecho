@@ -51,6 +51,7 @@ export default defineConfig({
     allowedHosts: true,
     hmr: {
       overlay: false,
+      clientPort: 443, // Add this line to fix HMR issues
     },
   },
   cacheDir: "node_modules/.vite",

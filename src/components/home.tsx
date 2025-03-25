@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import MainLayout from "./layout/MainLayout";
-import { Toaster } from "../components/ui/toaster";
+import Layout from "./layout";
 import { useToast } from "./ui/use-toast";
-import { motion } from "framer-motion";
 import { usePersona } from "@/contexts/PersonaContext";
 
 const Home = () => {
@@ -69,22 +67,16 @@ const Home = () => {
   );
 
   return (
-    <motion.div
-      className="min-h-screen bg-background transition-colors duration-300"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+    <Layout
+      isDarkMode={isDarkMode}
+      onThemeChange={handleThemeChange}
+      accentColor={accentColor}
+      onAccentColorChange={handleAccentColorChange}
+      showHeader={false}
+      showFooter={false}
     >
-      <MainLayout
-        isDarkMode={isDarkMode}
-        onThemeChange={handleThemeChange}
-        accentColor={accentColor}
-        onAccentColorChange={handleAccentColorChange}
-      >
-        {/* The MainLayout component handles the structure with sidebar and chat interface */}
-      </MainLayout>
-      <Toaster />
-    </motion.div>
+      {/* The Layout component handles the structure with sidebar and chat interface */}
+    </Layout>
   );
 };
 
