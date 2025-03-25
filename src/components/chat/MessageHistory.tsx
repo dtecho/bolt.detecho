@@ -166,9 +166,7 @@ const MessageHistory = ({
 
       // Get the normalized language name with fallback to 'text' for unsupported languages
       const lowerCaseLanguage = block.language.toLowerCase();
-      const normalizedLanguage =
-        languageMap[lowerCaseLanguage] ||
-        (lowerCaseLanguage === "gcode" ? "text" : block.language);
+      const normalizedLanguage = languageMap[lowerCaseLanguage] || "text";
 
       parts.push(
         <div
@@ -313,4 +311,5 @@ const MessageHistory = ({
   );
 };
 
+export { MessageHistory };
 export default MessageHistory;
