@@ -8,6 +8,7 @@ const routes = tempoRoutes.default || tempoRoutes;
 import { PersonaProvider, usePersona } from "./contexts/PersonaContext";
 import { useToast } from "./components/ui/use-toast";
 import CodeEditorChat from "./components/editor/CodeEditorChat";
+import PersonaTestingPlayground from "./components/playground/PersonaTestingPlayground";
 
 function AppContent() {
   const location = useLocation();
@@ -60,6 +61,10 @@ function AppContent() {
         <Route path="/" element={<Home />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/code-editor" element={<CodeEditorChat />} />
+        <Route
+          path="/persona-testing"
+          element={<PersonaTestingPlayground className="h-screen p-6" />}
+        />
         {/* Add this line to allow Tempo to capture routes before any catchall */}
         {import.meta.env.VITE_TEMPO === "true" && (
           <Route path="/tempobook/*" element={<></>} />

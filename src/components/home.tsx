@@ -4,7 +4,7 @@ import { useToast } from "./ui/use-toast";
 import { usePersona } from "@/contexts/PersonaContext";
 import Button from "./ui/button";
 import { Link } from "react-router-dom";
-import { Code, MessageSquare, Settings } from "lucide-react";
+import { Code, MessageSquare, Settings, Sparkles } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
+import PersonaTestingPlayground from "./playground/PersonaTestingPlayground";
 
 const Home = () => {
   const { toast } = useToast();
@@ -130,6 +131,24 @@ const Home = () => {
           <Card className="hover:shadow-md transition-all">
             <CardHeader>
               <CardTitle className="flex items-center">
+                <Sparkles className="mr-2 h-5 w-5 text-primary" />
+                Persona Testing
+              </CardTitle>
+              <CardDescription>
+                Test your personas with different prompts in a sandbox
+                environment.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/persona-testing">Open Playground</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-all">
+            <CardHeader>
+              <CardTitle className="flex items-center">
                 <Settings className="mr-2 h-5 w-5 text-primary" />
                 Settings
               </CardTitle>
@@ -143,6 +162,13 @@ const Home = () => {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6">
+            Persona Testing Playground
+          </h2>
+          <PersonaTestingPlayground className="h-[800px]" />
         </div>
       </div>
     </Layout>
