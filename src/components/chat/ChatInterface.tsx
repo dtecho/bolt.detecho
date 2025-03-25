@@ -19,13 +19,13 @@ import {
   Sun,
 } from "lucide-react";
 import MessageHistory from "./MessageHistory";
-import { MessageInput } from "./MessageInput";
+import MessageInput from "./MessageInput";
 import { usePersona } from "@/contexts/PersonaContext";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
-  atomDark,
-  oneLight,
+  vs,
+  vscDarkPlus,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface Message {
@@ -89,7 +89,7 @@ const FallbackMessageHistory = React.memo(
                       const match = /language-(\w+)/.exec(className || "");
                       return !inline && match ? (
                         <SyntaxHighlighter
-                          style={isDarkMode ? atomDark : oneLight}
+                          style={isDarkMode ? vscDarkPlus : vs}
                           language={match[1]}
                           PreTag="div"
                           className="rounded-md border border-muted my-2"

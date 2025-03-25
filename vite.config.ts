@@ -26,6 +26,12 @@ export default defineConfig({
       "@radix-ui/react-toast",
       "@radix-ui/react-dialog",
       "@radix-ui/react-alert-dialog",
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "framer-motion",
+      "react-syntax-highlighter",
+      "react-markdown",
     ],
     force: true,
   },
@@ -48,4 +54,9 @@ export default defineConfig({
     },
   },
   cacheDir: "node_modules/.vite",
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
 });
