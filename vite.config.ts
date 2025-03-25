@@ -21,7 +21,13 @@ export default defineConfig({
   optimizeDeps: {
     entries: ["src/main.tsx", "src/tempobook/**/*"],
     exclude: ["tempo-devtools/swc"],
-    include: ["@radix-ui/react-select", "@radix-ui/react-toast"],
+    include: [
+      "@radix-ui/react-select",
+      "@radix-ui/react-toast",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-alert-dialog",
+    ],
+    force: true,
   },
   plugins: [
     react({
@@ -41,4 +47,5 @@ export default defineConfig({
       overlay: false,
     },
   },
+  cacheDir: "node_modules/.vite",
 });
