@@ -7,10 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Button } from "../ui/button";
+import Button from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 import { PlusCircle, Check, Trash2 } from "lucide-react";
-import { Badge } from "../ui/badge";
+import Badge from "../ui/badge";
 import {
   Tooltip,
   TooltipContent,

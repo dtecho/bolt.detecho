@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Moon, Sun, Palette, RotateCcw, Keyboard } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
