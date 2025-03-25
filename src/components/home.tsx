@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import MainLayout from "./layout/MainLayout";
-import { Toaster } from "./ui/toaster";
-import { useToast, toast } from "./ui/use-toast";
+import { Toaster } from "../components/ui/toaster";
+import { useToast } from "./ui/use-toast";
 import { motion } from "framer-motion";
 import { usePersona } from "@/contexts/PersonaContext";
 

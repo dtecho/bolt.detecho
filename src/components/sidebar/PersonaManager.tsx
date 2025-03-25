@@ -24,7 +24,7 @@ import {
   Filter,
   SlidersHorizontal,
 } from "lucide-react";
-import { usePersona, PersonaConfig } from "@/contexts/PersonaContext.tsx";
+import { usePersona, PersonaConfig } from "@/contexts/PersonaContext";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

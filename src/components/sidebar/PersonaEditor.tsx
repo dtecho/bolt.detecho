@@ -57,7 +57,7 @@ import AlertDialog, {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import PersonaManager from "./PersonaManager.tsx";
+import PersonaManager from "./PersonaManager";
 
 interface PersonaEditorProps {
   onSave?: (persona: PersonaConfig) => void;
