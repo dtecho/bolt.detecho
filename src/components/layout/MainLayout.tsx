@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import AppShell from "./AppShell";
 import ChatInterface from "@/components/chat/ChatInterface";
+import useKeyboardShortcuts from "@/hooks/useKeyboardShortcuts";
+import { useToast } from "@/components/ui/use-toast";
+import KeyboardShortcutsDialog from "@/components/ui/keyboard-shortcuts-dialog";
 
 interface MainLayoutProps {
   children?: React.ReactNode;
@@ -23,6 +26,8 @@ const MainLayout = ({
 }: MainLayoutProps) => {
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -41,17 +46,90 @@ const MainLayout = ({
     }
   };
 
+  const toggleSidebar = useCallback(() => {
+    setSidebarOpen((prev) => !prev);
+    toast({
+      title: `Sidebar ${sidebarOpen ? "collapsed" : "expanded"}`,
+      duration: 2000,
+    });
+  }, [sidebarOpen, toast]);
+
+  const toggleDarkMode = useCallback(() => {
+    onThemeChange(!isDarkMode);
+    toast({
+      title: `${!isDarkMode ? "Dark" : "Light"} mode activated`,
+      duration: 2000,
+    });
+  }, [isDarkMode, onThemeChange, toast]);
+
+  const toggleShortcutsDialog = useCallback(() => {
+    setShowShortcutsDialog((prev) => !prev);
+  }, []);
+
+  // Define keyboard shortcuts
+  const shortcuts = [
+    {
+      name: "Navigation",
+      shortcuts: [
+        {
+          key: "B",
+          ctrlKey: true,
+          description: "Toggle sidebar",
+          action: toggleSidebar,
+        },
+        {
+          key: "/",
+          ctrlKey: true,
+          description: "Show keyboard shortcuts",
+          action: toggleShortcutsDialog,
+        },
+      ],
+    },
+    {
+      name: "Appearance",
+      shortcuts: [
+        {
+          key: "D",
+          ctrlKey: true,
+          description: "Toggle dark/light mode",
+          action: toggleDarkMode,
+        },
+      ],
+    },
+  ];
+
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts({
+    shortcuts,
+    enabled: true,
+    showToasts: true,
+  });
+
   return (
-    <AppShell showHeader={showHeader} showFooter={showFooter}>
-      {children ? (
-        children
-      ) : (
-        <ChatInterface
-          onOpenPersonaEditor={handleOpenPersonaEditor}
-          className="h-full"
-        />
+    <>
+      <AppShell
+        showHeader={showHeader}
+        showFooter={showFooter}
+        sidebarProps={{
+          isOpen: sidebarOpen,
+          onToggleCollapse: toggleSidebar,
+        }}
+      >
+        {children ? (
+          children
+        ) : (
+          <ChatInterface
+            onOpenPersonaEditor={handleOpenPersonaEditor}
+            className="h-full"
+          />
+        )}
+      </AppShell>
+
+      {/* Global keyboard shortcuts dialog */}
+      {showShortcutsDialog && (
+        <KeyboardShortcutsDialog shortcuts={shortcuts} trigger={<div />} />
       )}
-    </AppShell>
+    </>
   );
 };
 

@@ -1,9 +1,22 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { ChevronLeft, ChevronRight, Settings, User, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Settings,
+  User,
+  X,
+  Keyboard,
+} from "lucide-react";
 import PersonaEditor from "./PersonaEditor";
 import ThemeSettings from "./ThemeSettings";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -36,23 +49,39 @@ const Sidebar = ({
           {(!isCollapsed || isMobile) && (
             <h2 className="font-semibold">Bolt.DIY</h2>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggleCollapse}
-            className="ml-auto"
-            aria-label={
-              isCollapsed && !isMobile ? "Expand sidebar" : "Collapse sidebar"
-            }
-          >
-            {isMobile ? (
-              <X size={18} />
-            ) : isCollapsed ? (
-              <ChevronRight size={18} />
-            ) : (
-              <ChevronLeft size={18} />
-            )}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onToggleCollapse}
+                  className="ml-auto"
+                  aria-label={
+                    isCollapsed && !isMobile
+                      ? "Expand sidebar"
+                      : "Collapse sidebar"
+                  }
+                >
+                  {isMobile ? (
+                    <X size={18} />
+                  ) : isCollapsed ? (
+                    <ChevronRight size={18} />
+                  ) : (
+                    <ChevronLeft size={18} />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>
+                  {isCollapsed && !isMobile
+                    ? "Expand sidebar"
+                    : "Collapse sidebar"}{" "}
+                  (Ctrl+B)
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Sidebar Tabs */}

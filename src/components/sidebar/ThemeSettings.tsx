@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Moon, Sun, Palette, RotateCcw } from "lucide-react";
+import { Moon, Sun, Palette, RotateCcw, Keyboard } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import KeyboardShortcutsDialog from "@/components/ui/keyboard-shortcuts-dialog";
 
 interface ThemeSettingsProps {
   isDarkMode?: boolean;
@@ -147,7 +149,26 @@ const ThemeSettings = ({
       </div>
 
       <div className="space-y-4">
-        {/* Dark Mode Toggle */}
+        {/* Keyboard shortcuts dialog */}
+        <div className="flex justify-end mb-2">
+          <KeyboardShortcutsDialog
+            shortcuts={[
+              {
+                name: "Theme Controls",
+                shortcuts: [
+                  {
+                    key: "D",
+                    ctrlKey: true,
+                    description: "Toggle dark/light mode",
+                    action: () => {},
+                  },
+                ],
+              },
+            ]}
+          />
+        </div>
+        
+        {/* Dark Mode Toggle */
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
           <div className="flex items-center space-x-2">
             {darkMode ? (
@@ -159,12 +180,24 @@ const ThemeSettings = ({
               {darkMode ? "Dark" : "Light"} Mode
             </span>
           </div>
-          <Switch
-            checked={darkMode}
-            onCheckedChange={handleThemeToggle}
-            aria-label="Toggle dark mode"
-            className="data-[state=checked]:bg-primary"
-          />
+          <div className="flex items-center space-x-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-xs text-muted-foreground">Ctrl+D</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Toggle dark mode with Ctrl+D</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <Switch
+              checked={darkMode}
+              onCheckedChange={handleThemeToggle}
+              aria-label="Toggle dark mode"
+              className="data-[state=checked]:bg-primary"
+            />
+          </div>
         </div>
 
         {/* Accent Color Selection */}
