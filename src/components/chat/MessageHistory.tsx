@@ -4,10 +4,10 @@ import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { User, Bot, Copy, Check } from "lucide-react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
-  vscDarkPlus,
   vs,
+  vscDarkPlus,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
 import {
@@ -164,9 +164,10 @@ const MessageHistory = ({
         tsx: "tsx",
       };
 
-      // Get the normalized language name with fallback to 'text' for unsupported languages
+      // Get the normalized language name with fallback to plain text for unsupported languages
       const lowerCaseLanguage = block.language.toLowerCase();
-      const normalizedLanguage = languageMap[lowerCaseLanguage] || "text";
+      // Use text as fallback since mathematica isn't supported
+      const normalizedLanguage = languageMap[lowerCaseLanguage] || null;
 
       parts.push(
         <div
