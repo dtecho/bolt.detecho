@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Moon, Sun, Palette } from "lucide-react";
+import { Moon, Sun, Palette, RotateCcw } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ThemeSettingsProps {
   isDarkMode?: boolean;
@@ -11,7 +12,10 @@ interface ThemeSettingsProps {
   onAccentColorChange?: (color: string) => void;
 }
 
-const ACCENT_COLORS = [
+export const THEME_STORAGE_KEY = "bolt-diy-dark-mode";
+export const ACCENT_COLOR_STORAGE_KEY = "bolt-diy-accent-color";
+
+export const ACCENT_COLORS = [
   { name: "Default", value: "#0ea5e9", class: "bg-blue-500" },
   { name: "Purple", value: "#8b5cf6", class: "bg-purple-500" },
   { name: "Green", value: "#10b981", class: "bg-green-500" },
@@ -20,44 +24,117 @@ const ACCENT_COLORS = [
   { name: "Pink", value: "#ec4899", class: "bg-pink-500" },
 ];
 
+// Helper functions for theme management
+export const getStoredTheme = (): string | null => {
+  return localStorage.getItem(THEME_STORAGE_KEY);
+};
+
+export const getStoredAccentColor = (): string | null => {
+  return localStorage.getItem(ACCENT_COLOR_STORAGE_KEY);
+};
+
+export const setStoredTheme = (isDark: boolean): void => {
+  localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+};
+
+export const setStoredAccentColor = (color: string): void => {
+  localStorage.setItem(ACCENT_COLOR_STORAGE_KEY, color);
+};
+
+export const applyTheme = (isDark: boolean): void => {
+  document.documentElement.classList.toggle("dark", isDark);
+};
+
+export const applyAccentColor = (color: string): void => {
+  document.documentElement.style.setProperty("--accent-color", color);
+};
+
 const ThemeSettings = ({
   isDarkMode = false,
   onThemeChange = () => {},
   accentColor = ACCENT_COLORS[0].value,
   onAccentColorChange = () => {},
 }: ThemeSettingsProps) => {
+  const { toast } = useToast();
+
   // Initialize from localStorage if available
   const [darkMode, setDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem("bolt-diy-dark-mode");
+    const savedMode = getStoredTheme();
     return savedMode === "dark" ? true : isDarkMode;
   });
 
   const [selectedAccentColor, setSelectedAccentColor] = useState(() => {
-    const savedColor = localStorage.getItem("bolt-diy-accent-color");
+    const savedColor = getStoredAccentColor();
     return savedColor || accentColor;
   });
 
   // Apply theme on initial render
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-    document.documentElement.style.setProperty(
-      "--accent-color",
-      selectedAccentColor,
-    );
+    applyTheme(darkMode);
+    applyAccentColor(selectedAccentColor);
   }, [darkMode, selectedAccentColor]);
+
+  // Sync with props if they change externally
+  useEffect(() => {
+    if (isDarkMode !== darkMode) {
+      setDarkMode(isDarkMode);
+    }
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    if (
+      accentColor !== selectedAccentColor &&
+      accentColor !== ACCENT_COLORS[0].value
+    ) {
+      setSelectedAccentColor(accentColor);
+    }
+  }, [accentColor]);
 
   const handleThemeToggle = (checked: boolean) => {
     setDarkMode(checked);
     onThemeChange(checked);
-    document.documentElement.classList.toggle("dark", checked);
-    localStorage.setItem("bolt-diy-dark-mode", checked ? "dark" : "light");
+    applyTheme(checked);
+    setStoredTheme(checked);
+
+    toast({
+      title: `${checked ? "Dark" : "Light"} mode activated`,
+      description: `Theme preference saved for future visits`,
+      duration: 2000,
+    });
   };
 
   const handleAccentColorChange = (color: string) => {
     setSelectedAccentColor(color);
     onAccentColorChange(color);
-    document.documentElement.style.setProperty("--accent-color", color);
-    localStorage.setItem("bolt-diy-accent-color", color);
+    applyAccentColor(color);
+    setStoredAccentColor(color);
+
+    toast({
+      title: "Accent color updated",
+      description: "Color preference saved for future visits",
+      duration: 2000,
+    });
+  };
+
+  const resetToDefaults = () => {
+    // Reset to default theme (light mode)
+    setDarkMode(false);
+    onThemeChange(false);
+    applyTheme(false);
+    setStoredTheme(false);
+
+    // Reset to default accent color
+    const defaultColor = ACCENT_COLORS[0].value;
+    setSelectedAccentColor(defaultColor);
+    onAccentColorChange(defaultColor);
+    applyAccentColor(defaultColor);
+    setStoredAccentColor(defaultColor);
+
+    toast({
+      title: "Theme reset to defaults",
+      description: "Light mode and default blue accent color restored",
+      duration: 3000,
+    });
   };
 
   return (
@@ -122,7 +199,20 @@ const ThemeSettings = ({
           </div>
         </div>
 
-        {/* Theme settings are applied in real-time */}
+        {/* Reset to defaults button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full mt-4 text-xs"
+          onClick={resetToDefaults}
+        >
+          <RotateCcw className="h-3.5 w-3.5 mr-2" />
+          Reset to Defaults
+        </Button>
+
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          Theme preferences are automatically saved for your next visit
+        </p>
       </div>
     </div>
   );
