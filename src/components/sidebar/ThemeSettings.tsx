@@ -170,6 +170,7 @@ const ThemeSettings = ({
                 ],
               },
             ]}
+            trigger={<div />}
           />
         </div>
 
