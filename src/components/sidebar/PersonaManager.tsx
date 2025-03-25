@@ -24,7 +24,9 @@ import {
   Filter,
   SlidersHorizontal,
   FileJson,
+  Share2,
 } from "lucide-react";
+import PersonaShareDialog from "@/components/ui/dialog/PersonaShareDialog";
 import { usePersona, PersonaConfig } from "@/contexts/PersonaContext";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -62,12 +64,14 @@ interface PersonaManagerProps {
   onEditPersona?: (persona: PersonaConfig) => void;
   onCreateNewPersona?: () => void;
   onBack?: () => void;
+  isDashboard?: boolean;
 }
 
 const PersonaManager = ({
   onEditPersona,
   onCreateNewPersona,
   onBack,
+  isDashboard = false,
 }: PersonaManagerProps) => {
   const {
     persona: currentPersona,
@@ -76,6 +80,7 @@ const PersonaManager = ({
     deletePersona,
     exportPersona,
     importPersona,
+    generateShareableLink,
   } = usePersona();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,6 +91,9 @@ const PersonaManager = ({
   const [filterFavorites, setFilterFavorites] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [personaToShare, setPersonaToShare] = useState<string | null>(null);
+  const [shareableLink, setShareableLink] = useState("");
 
   // Mock favorites for demo - in a real app, this would be stored in the context
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -103,6 +111,18 @@ const PersonaManager = ({
     e.stopPropagation(); // Prevent card click event
     setPersonaToDelete(personaId);
     setDeleteDialogOpen(true);
+  };
+
+  const handleSharePersona = (personaId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    try {
+      const link = generateShareableLink(personaId);
+      setShareableLink(link);
+      setPersonaToShare(personaId);
+      setShareDialogOpen(true);
+    } catch (error) {
+      console.error("Failed to generate shareable link:", error);
+    }
   };
 
   const confirmDeletePersona = () => {
@@ -221,7 +241,9 @@ const PersonaManager = ({
     });
 
   return (
-    <Card className="w-full h-full bg-background border-border">
+    <Card
+      className={`${isDashboard ? "" : "w-full h-full"} bg-background border-border`}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -378,7 +400,9 @@ const PersonaManager = ({
             )}
           </div>
         ) : (
-          <ScrollArea className="h-[calc(100vh-380px)] pr-4">
+          <ScrollArea
+            className={`${isDashboard ? "h-[500px]" : "h-[calc(100vh-380px)]"} pr-4`}
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {processedPersonas.map((persona) => (
                 <motion.div
@@ -490,6 +514,26 @@ const PersonaManager = ({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7"
+                              onClick={(e) =>
+                                handleSharePersona(persona.id || "", e)
+                              }
+                            >
+                              <Share2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Share persona</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 exportPersona(persona.id || "");
@@ -580,6 +624,17 @@ const PersonaManager = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {shareDialogOpen && personaToShare && (
+        <PersonaShareDialog
+          isOpen={shareDialogOpen}
+          onClose={() => setShareDialogOpen(false)}
+          persona={
+            savedPersonas.find((p) => p.id === personaToShare) || currentPersona
+          }
+          shareableLink={shareableLink}
+        />
+      )}
     </Card>
   );
 };

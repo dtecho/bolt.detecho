@@ -41,6 +41,8 @@ interface PersonaContextType {
   loadPersona: (personaId: string) => void;
   exportPersona: (personaId: string) => void;
   importPersona: (jsonData: string) => boolean;
+  generateShareableLink: (personaId: string) => string;
+  importFromShareableLink: (encodedData: string) => boolean;
 }
 
 const STORAGE_KEY = "bolt_diy_saved_personas";
@@ -168,6 +170,42 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const generateShareableLink = (personaId: string): string => {
+    const personaToShare =
+      personaId === "current"
+        ? persona
+        : savedPersonas.find((p) => p.id === personaId);
+
+    if (!personaToShare) {
+      throw new Error("Persona not found");
+    }
+
+    // Create a copy without the ID to avoid conflicts when importing
+    const personaForSharing = { ...personaToShare };
+    delete personaForSharing.id;
+
+    // Serialize and encode the persona data
+    const jsonData = JSON.stringify(personaForSharing);
+    const encodedData = btoa(encodeURIComponent(jsonData));
+
+    // Create the shareable URL with the encoded data
+    const baseUrl = window.location.origin;
+    return `${baseUrl}?sharedPersona=${encodedData}`;
+  };
+
+  const importFromShareableLink = (encodedData: string): boolean => {
+    try {
+      // Decode the data
+      const jsonData = decodeURIComponent(atob(encodedData));
+
+      // Import the persona using the existing method
+      return importPersona(jsonData);
+    } catch (error) {
+      console.error("Failed to import persona from link:", error);
+      return false;
+    }
+  };
+
   return (
     <PersonaContext.Provider
       value={{
@@ -181,6 +219,8 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
         loadPersona,
         exportPersona,
         importPersona,
+        generateShareableLink,
+        importFromShareableLink,
       }}
     >
       {children}

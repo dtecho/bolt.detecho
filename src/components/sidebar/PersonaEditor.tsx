@@ -34,6 +34,8 @@ import {
   Eye,
   MessageSquare,
   Sparkles,
+  Check,
+  FileJson,
 } from "lucide-react";
 import KnowledgeDomainSelector from "./KnowledgeDomainSelector";
 import {
@@ -310,6 +312,10 @@ const PersonaEditor = React.memo(
             const success = importPersona(content);
             if (!success) {
               setImportError("Failed to import persona. Invalid format.");
+            } else {
+              // Show success message
+              setImportError("success");
+              setTimeout(() => setImportError(null), 3000);
             }
             // Reset the file input
             if (fileInputRef.current) {
@@ -630,9 +636,20 @@ const PersonaEditor = React.memo(
 
             <CardFooter className="flex flex-col space-y-4 pt-6">
               {importError && (
-                <div className="w-full p-2 mb-2 text-sm text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300 rounded-md flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  {importError}
+                <div
+                  className={`w-full p-2 mb-2 text-sm rounded-md flex items-center ${importError === "success" ? "text-green-500 bg-green-50 dark:bg-green-950 dark:text-green-300" : "text-red-500 bg-red-50 dark:bg-red-950 dark:text-red-300"}`}
+                >
+                  {importError === "success" ? (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Persona imported successfully!
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      {importError}
+                    </>
+                  )}
                 </div>
               )}
 
@@ -741,7 +758,7 @@ const PersonaEditor = React.memo(
                     size="sm"
                     onClick={handleImportClick}
                   >
-                    <Upload className="mr-2 h-4 w-4" />
+                    <FileJson className="mr-2 h-4 w-4" />
                     Import
                   </Button>
 

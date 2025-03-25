@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
@@ -43,6 +44,7 @@ interface ChatInterfaceProps {
   isPersonaCustomized?: boolean;
   onOpenPersonaEditor?: () => void;
   className?: string;
+  enableComparison?: boolean;
 }
 
 // Define a fallback component to use if the MessageHistory import fails
@@ -247,8 +249,12 @@ const generatePersonaResponse = (
 };
 
 const ChatInterface = React.memo(
-  ({ onOpenPersonaEditor = () => {}, className = "" }: ChatInterfaceProps) => {
-    const { persona, isCustomized } = usePersona();
+  ({
+    onOpenPersonaEditor = () => {},
+    className = "",
+    enableComparison = false,
+  }: ChatInterfaceProps) => {
+    const { persona, isCustomized, savedPersonas } = usePersona();
     const [messages, setMessages] = useState<Message[]>([
       {
         id: "1",
@@ -292,6 +298,10 @@ const ChatInterface = React.memo(
     }, [persona]);
 
     const [activeTab, setActiveTab] = useState("chat");
+    const [isComparisonMode, setIsComparisonMode] = useState(false);
+    const [comparisonPersona, setComparisonPersona] =
+      useState<PersonaConfig | null>(null);
+    const [comparisonMessages, setComparisonMessages] = useState<Message[]>([]);
     const [isDarkMode, setIsDarkMode] = useState(() => {
       return document.documentElement.classList.contains("dark");
     });
@@ -450,10 +460,148 @@ const ChatInterface = React.memo(
           </div>
 
           <TabsContent value="chat" className="flex-1 flex flex-col p-0 m-0">
+            {enableComparison && (
+              <div className="flex items-center justify-between border-b p-2 bg-muted/20">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="comparison-mode"
+                    checked={isComparisonMode}
+                    onCheckedChange={setIsComparisonMode}
+                  />
+                  <label
+                    htmlFor="comparison-mode"
+                    className="text-sm font-medium"
+                  >
+                    Comparison Mode
+                  </label>
+                </div>
+                {isComparisonMode && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm">Compare with:</span>
+                    <select
+                      className="text-sm border rounded p-1 bg-background"
+                      value={comparisonPersona?.id || ""}
+                      onChange={(e) => {
+                        const selectedPersona = savedPersonas.find(
+                          (p) => p.id === e.target.value,
+                        );
+                        if (selectedPersona) {
+                          setComparisonPersona(selectedPersona);
+
+                          // Generate welcome message for comparison persona
+                          if (comparisonMessages.length === 0) {
+                            try {
+                              const welcomeMessage = generatePersonaResponse(
+                                "Hello",
+                                selectedPersona,
+                              );
+                              setComparisonMessages([
+                                {
+                                  id: "comparison-1",
+                                  content: welcomeMessage,
+                                  sender: "assistant",
+                                  timestamp: new Date(),
+                                  isMarkdown: true,
+                                },
+                              ]);
+                            } catch (error) {
+                              console.error(
+                                "Error generating welcome message:",
+                                error,
+                              );
+                              setComparisonMessages([
+                                {
+                                  id: "comparison-1",
+                                  content:
+                                    "Hello! I'm your comparison assistant.",
+                                  sender: "assistant",
+                                  timestamp: new Date(),
+                                  isMarkdown: true,
+                                },
+                              ]);
+                            }
+                          }
+                        }
+                      }}
+                    >
+                      <option value="">Select a persona</option>
+                      {savedPersonas
+                        .filter((p) => p.id !== persona.id)
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="flex-1 overflow-hidden">
-              <MessageHistory messages={messages} />
+              <MessageHistory
+                messages={messages}
+                comparisonMessages={comparisonMessages}
+                isComparison={isComparisonMode && !!comparisonPersona}
+                leftPersonaName={persona.name}
+                rightPersonaName={comparisonPersona?.name}
+              />
             </div>
-            <MessageInput onSendMessage={handleSendMessage} />
+            <MessageInput
+              onSendMessage={(content) => {
+                handleSendMessage(content);
+
+                // If in comparison mode, also generate a response with the comparison persona
+                if (isComparisonMode && comparisonPersona) {
+                  // Add user message to comparison messages
+                  const userMessage: Message = {
+                    id: `comparison-${Date.now().toString()}`,
+                    content,
+                    sender: "user",
+                    timestamp: new Date(),
+                    isMarkdown: false,
+                  };
+
+                  setComparisonMessages((prev) => [...prev, userMessage]);
+
+                  // Generate response with comparison persona
+                  setTimeout(() => {
+                    try {
+                      const responseContent = generatePersonaResponse(
+                        content,
+                        comparisonPersona,
+                      );
+
+                      const assistantMessage: Message = {
+                        id: `comparison-${(Date.now() + 1).toString()}`,
+                        content: responseContent,
+                        sender: "assistant",
+                        timestamp: new Date(),
+                        isMarkdown: true,
+                      };
+
+                      setComparisonMessages((prev) => [
+                        ...prev,
+                        assistantMessage,
+                      ]);
+                    } catch (error) {
+                      console.error(
+                        "Error generating comparison response:",
+                        error,
+                      );
+                      const errorMessage: Message = {
+                        id: `comparison-${(Date.now() + 1).toString()}`,
+                        content:
+                          "I'm sorry, I encountered an error while processing your request.",
+                        sender: "assistant",
+                        timestamp: new Date(),
+                        isMarkdown: true,
+                      };
+                      setComparisonMessages((prev) => [...prev, errorMessage]);
+                    }
+                  }, 1200); // Slightly delayed from the main response
+                }
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="playground" className="flex-1 p-4">
