@@ -37,7 +37,7 @@ const MessageInput = ({
       initial={{ opacity: 0.8, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="w-full border-t bg-background p-4 rounded-b-lg shadow-sm"
+      className="w-full border-t bg-background p-2 sm:p-4 rounded-b-lg shadow-sm"
     >
       <div className="flex flex-col space-y-3">
         <div
@@ -51,35 +51,37 @@ const MessageInput = ({
             onBlur={() => setIsFocused(false)}
             placeholder={placeholder}
             disabled={disabled}
-            className="min-h-[80px] resize-none rounded-xl border-muted focus:border-primary pr-4 pl-4 pt-3 pb-12 text-base"
+            className="min-h-[60px] sm:min-h-[80px] resize-none rounded-xl border-muted focus:border-primary pr-3 pl-3 sm:pr-4 sm:pl-4 pt-2 sm:pt-3 pb-12 text-sm sm:text-base"
           />
-          <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between px-2 py-1">
-            <div className="flex items-center space-x-1">
+          <div className="absolute bottom-2 left-1 sm:left-2 right-1 sm:right-2 flex items-center justify-between px-1 sm:px-2 py-1">
+            <div className="flex items-center space-x-0 sm:space-x-1">
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
+                className="hidden sm:block"
               >
                 <Button
                   variant="ghost"
                   size="icon"
                   type="button"
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-8 w-8"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-7 w-7 sm:h-8 sm:w-8"
                 >
-                  <Paperclip size={16} />
+                  <Paperclip size={14} className="sm:h-4 sm:w-4" />
                   <span className="sr-only">Attach file</span>
                 </Button>
               </motion.div>
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
+                className="hidden sm:block"
               >
                 <Button
                   variant="ghost"
                   size="icon"
                   type="button"
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-8 w-8"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-7 w-7 sm:h-8 sm:w-8"
                 >
-                  <Image size={16} />
+                  <Image size={14} className="sm:h-4 sm:w-4" />
                   <span className="sr-only">Add image</span>
                 </Button>
               </motion.div>
@@ -91,9 +93,9 @@ const MessageInput = ({
                   variant="ghost"
                   size="icon"
                   type="button"
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-8 w-8"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-7 w-7 sm:h-8 sm:w-8"
                 >
-                  <Mic size={16} />
+                  <Mic size={14} className="sm:h-4 sm:w-4" />
                   <span className="sr-only">Voice input</span>
                 </Button>
               </motion.div>
@@ -105,9 +107,9 @@ const MessageInput = ({
                   variant="ghost"
                   size="icon"
                   type="button"
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-8 w-8"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-7 w-7 sm:h-8 sm:w-8"
                 >
-                  <Smile size={16} />
+                  <Smile size={14} className="sm:h-4 sm:w-4" />
                   <span className="sr-only">Emoji</span>
                 </Button>
               </motion.div>
@@ -120,11 +122,11 @@ const MessageInput = ({
               <Button
                 onClick={handleSendMessage}
                 disabled={!message.trim() || disabled}
-                className={`gap-2 rounded-full px-4 ${!message.trim() || disabled ? "opacity-70" : "shadow-md hover:shadow-lg"}`}
+                className={`gap-1 sm:gap-2 rounded-full px-3 sm:px-4 ${!message.trim() || disabled ? "opacity-70" : "shadow-md hover:shadow-lg"}`}
                 size="sm"
               >
-                Send
-                <Send size={14} />
+                <span className="text-xs sm:text-sm">Send</span>
+                <Send size={12} className="sm:h-4 sm:w-4" />
               </Button>
             </motion.div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,7 +18,18 @@ import {
   Sparkles,
   Moon,
   Sun,
+  Download,
+  Upload,
+  FileJson,
+  Check,
+  AlertCircle,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import MessageHistory from "./MessageHistory";
 import MessageInput from "./MessageInput";
 import { usePersona } from "@/contexts/PersonaContext";
@@ -254,7 +265,14 @@ const ChatInterface = React.memo(
     className = "",
     enableComparison = true,
   }: ChatInterfaceProps) => {
-    const { persona, isCustomized, savedPersonas, loadPersona } = usePersona();
+    const {
+      persona,
+      isCustomized,
+      savedPersonas,
+      loadPersona,
+      exportPersona,
+      importPersona,
+    } = usePersona();
     const [messages, setMessages] = useState<Message[]>([
       {
         id: "1",
@@ -356,6 +374,13 @@ const ChatInterface = React.memo(
       return document.documentElement.classList.contains("dark");
     });
 
+    // Import/Export state
+    const [importStatus, setImportStatus] = useState<
+      "idle" | "success" | "error"
+    >("idle");
+    const [importErrorMessage, setImportErrorMessage] = useState("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     useEffect(() => {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -379,6 +404,126 @@ const ChatInterface = React.memo(
         "bolt-diy-dark-mode",
         newDarkMode ? "dark" : "light",
       );
+    };
+
+    // Import/Export functions
+    const handleExportCurrentPersona = () => {
+      exportPersona("current");
+    };
+
+    const handleExportAllPersonas = () => {
+      // Create a combined JSON with all personas
+      const allPersonas = {
+        personas: savedPersonas,
+        exportDate: new Date().toISOString(),
+        version: "1.0",
+      };
+
+      // Create a file with all personas
+      const dataStr = JSON.stringify(allPersonas, null, 2);
+      const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+
+      // Create a download link and trigger it
+      const exportFileName = `bolt_diy_all_personas_${new Date().toISOString().slice(0, 10)}.json`;
+      const linkElement = document.createElement("a");
+      linkElement.setAttribute("href", dataUri);
+      linkElement.setAttribute("download", exportFileName);
+      linkElement.click();
+    };
+
+    const handleImportClick = () => {
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setImportStatus("idle");
+      setImportErrorMessage("");
+
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      // Validate file size (limit to 1MB)
+      if (file.size > 1024 * 1024) {
+        setImportStatus("error");
+        setImportErrorMessage("File too large. Maximum size is 1MB.");
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+
+      // Validate file type
+      if (file.type !== "application/json" && !file.name.endsWith(".json")) {
+        setImportStatus("error");
+        setImportErrorMessage(
+          "Invalid file type. Only JSON files are supported.",
+        );
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        try {
+          // Check if it's a single persona or a collection
+          const parsed = JSON.parse(content);
+
+          if (parsed.personas && Array.isArray(parsed.personas)) {
+            // It's a collection of personas
+            let importedCount = 0;
+            for (const personaData of parsed.personas) {
+              const success = importPersona(JSON.stringify(personaData));
+              if (success) importedCount++;
+            }
+
+            if (importedCount > 0) {
+              setImportStatus("success");
+              setTimeout(() => setImportStatus("idle"), 3000);
+            } else {
+              setImportStatus("error");
+              setImportErrorMessage(
+                "Failed to import any personas. Invalid format.",
+              );
+            }
+          } else {
+            // Try to import as a single persona
+            const success = importPersona(content);
+            if (success) {
+              setImportStatus("success");
+              setTimeout(() => setImportStatus("idle"), 3000);
+            } else {
+              setImportStatus("error");
+              setImportErrorMessage(
+                "Failed to import persona. Invalid format.",
+              );
+            }
+          }
+
+          // Reset the file input
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        } catch (error) {
+          setImportStatus("error");
+          setImportErrorMessage("Failed to parse JSON. Invalid format.");
+          console.error("Import error:", error);
+        }
+      };
+
+      reader.onerror = () => {
+        setImportStatus("error");
+        setImportErrorMessage("Error reading file. Please try again.");
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      };
+
+      reader.readAsText(file);
     };
 
     // Function to generate welcome message for comparison persona
@@ -496,7 +641,31 @@ const ChatInterface = React.memo(
       <div
         className={`flex flex-col h-full bg-white dark:bg-slate-950 ${className}`}
       >
-        <div className="flex items-center justify-between border-b p-4">
+        {/* Hidden file input for imports */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept=".json"
+          className="hidden"
+        />
+
+        {/* Import status notifications */}
+        {importStatus === "success" && (
+          <div className="absolute top-4 right-4 z-50 p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-md flex items-center shadow-md">
+            <Check className="h-4 w-4 mr-2" />
+            <span className="text-sm">Persona imported successfully!</span>
+          </div>
+        )}
+
+        {importStatus === "error" && (
+          <div className="absolute top-4 right-4 z-50 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md flex items-center shadow-md">
+            <AlertCircle className="h-4 w-4 mr-2" />
+            <span className="text-sm">{importErrorMessage}</span>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b p-3 sm:p-4 gap-2 sm:gap-0">
           <div className="flex items-center space-x-2">
             <MessageSquare className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">Bolt.DIY</h2>
@@ -514,12 +683,12 @@ const ChatInterface = React.memo(
             </TooltipProvider>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto justify-end">
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleDarkMode}
-              className="mr-2 h-8 w-8 rounded-full bg-background hover:bg-accent transition-all duration-200"
+              className="h-8 w-8 rounded-full bg-background hover:bg-accent transition-all duration-200 flex-shrink-0"
             >
               {isDarkMode ? (
                 <Sun className="h-4 w-4 text-yellow-400" />
@@ -530,20 +699,50 @@ const ChatInterface = React.memo(
 
             <Badge
               variant={isCustomized ? "default" : "outline"}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 flex-shrink-0 max-w-[120px] sm:max-w-none overflow-hidden text-ellipsis whitespace-nowrap"
             >
-              <Sparkles className="h-3 w-3" />
-              {persona.name}
+              <Sparkles className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{persona.name}</span>
             </Badge>
+
+            {/* Import/Export Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 flex-shrink-0"
+                >
+                  <FileJson className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportCurrentPersona}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Current Persona
+                </DropdownMenuItem>
+                {savedPersonas.length > 0 && (
+                  <DropdownMenuItem onClick={handleExportAllPersonas}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export All Personas
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={handleImportClick}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Persona
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <Button
               variant="outline"
               size="sm"
-              className="gap-1"
+              className="gap-1 flex-shrink-0"
               onClick={onOpenPersonaEditor}
             >
               <Settings className="h-4 w-4" />
-              Customize
+              <span className="hidden sm:inline">Customize</span>
+              <span className="sm:hidden">Edit</span>
             </Button>
           </div>
         </div>
@@ -574,7 +773,7 @@ const ChatInterface = React.memo(
 
           <TabsContent value="chat" className="flex-1 flex flex-col p-0 m-0">
             {enableComparison && (
-              <div className="flex items-center justify-between border-b p-3 bg-muted/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b p-3 bg-muted/20 gap-2">
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="comparison-mode"
@@ -607,10 +806,12 @@ const ChatInterface = React.memo(
                   </label>
                 </div>
                 {isComparisonMode && (
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">Compare with:</span>
+                  <div className="flex items-center space-x-2 w-full sm:w-auto">
+                    <span className="text-sm font-medium whitespace-nowrap">
+                      Compare with:
+                    </span>
                     <select
-                      className="text-sm border rounded-md p-1.5 bg-background focus:ring-1 focus:ring-primary"
+                      className="text-sm border rounded-md p-1.5 bg-background focus:ring-1 focus:ring-primary w-full sm:w-auto"
                       value={comparisonPersona?.id || ""}
                       onChange={(e) => {
                         const selectedPersona = savedPersonas.find(
@@ -641,7 +842,7 @@ const ChatInterface = React.memo(
                       )}
                     </select>
                     {isGeneratingComparison && (
-                      <span className="text-xs text-muted-foreground animate-pulse">
+                      <span className="text-xs text-muted-foreground animate-pulse whitespace-nowrap">
                         Generating...
                       </span>
                     )}

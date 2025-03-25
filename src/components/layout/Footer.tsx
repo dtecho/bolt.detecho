@@ -9,7 +9,7 @@ const Footer = ({ className }: FooterProps) => {
   return (
     <footer
       className={cn(
-        "h-12 w-full flex items-center justify-between px-4 border-t bg-background text-sm text-muted-foreground",
+        "h-10 sm:h-12 w-full flex items-center justify-between px-3 sm:px-4 border-t bg-background text-xs sm:text-sm text-muted-foreground",
         className,
       )}
     >

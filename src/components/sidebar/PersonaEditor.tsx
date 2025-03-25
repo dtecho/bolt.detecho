@@ -661,11 +661,11 @@ const PersonaEditor = React.memo(
                 className="hidden"
               />
 
-              <div className="flex justify-between w-full">
+              <div className="flex flex-col sm:flex-row justify-between w-full gap-2 sm:gap-0">
                 <div className="flex space-x-2">
                   <Button variant="outline" size="sm" onClick={handleReset}>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Reset
+                    <RefreshCw className="mr-1 sm:mr-2 h-4 w-4" />
+                    <span className="text-xs sm:text-sm">Reset</span>
                   </Button>
 
                   {selectedSavedPersona && (
@@ -681,11 +681,11 @@ const PersonaEditor = React.memo(
                             handleDeletePersona(selectedSavedPersona)
                           }
                         >
-                          <Trash className="mr-2 h-4 w-4" />
-                          Delete
+                          <Trash className="mr-1 sm:mr-2 h-4 w-4" />
+                          <span className="text-xs sm:text-sm">Delete</span>
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete Persona</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -704,18 +704,22 @@ const PersonaEditor = React.memo(
                   )}
                 </div>
 
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 justify-end">
                   <Dialog
                     open={saveDialogOpen}
                     onOpenChange={setSaveDialogOpen}
                   >
                     <DialogTrigger asChild>
-                      <Button variant="outline" onClick={handleSaveAsNew}>
-                        <BookmarkPlus className="mr-2 h-4 w-4" />
-                        Save As New
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSaveAsNew}
+                      >
+                        <BookmarkPlus className="mr-1 sm:mr-2 h-4 w-4" />
+                        <span className="text-xs sm:text-sm">Save As New</span>
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-[90vw] sm:max-w-lg">
                       <DialogHeader>
                         <DialogTitle>Save Persona</DialogTitle>
                         <DialogDescription>
@@ -744,9 +748,9 @@ const PersonaEditor = React.memo(
                     </DialogContent>
                   </Dialog>
 
-                  <Button onClick={handleSave}>
-                    <Save className="mr-2 h-4 w-4" />
-                    Apply Changes
+                  <Button size="sm" onClick={handleSave}>
+                    <Save className="mr-1 sm:mr-2 h-4 w-4" />
+                    <span className="text-xs sm:text-sm">Apply</span>
                   </Button>
                 </div>
               </div>

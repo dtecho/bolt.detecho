@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppShell from "./AppShell";
 import ChatInterface from "@/components/chat/ChatInterface";
 
@@ -21,8 +21,24 @@ const MainLayout = ({
   showHeader = false,
   showFooter = false,
 }: MainLayoutProps) => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const handleOpenPersonaEditor = () => {
-    // This function is passed to ChatInterface to ensure sidebar is open when persona editor is requested
+    // Open sidebar when persona editor is requested on mobile
+    if (isMobile) {
+      setSidebarOpen(true);
+    }
   };
 
   return (

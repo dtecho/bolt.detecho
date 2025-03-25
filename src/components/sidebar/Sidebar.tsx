@@ -1,32 +1,53 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { ChevronLeft, ChevronRight, Settings, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Settings, User, X } from "lucide-react";
 import PersonaEditor from "./PersonaEditor";
 import ThemeSettings from "./ThemeSettings";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   isCollapsed?: boolean;
+  isMobile?: boolean;
+  isOpen?: boolean;
   onToggleCollapse?: () => void;
+  className?: string;
 }
 
-const Sidebar = ({ isCollapsed = false, onToggleCollapse }: SidebarProps) => {
+const Sidebar = ({
+  isCollapsed = false,
+  isMobile = false,
+  isOpen = false,
+  onToggleCollapse,
+  className,
+}: SidebarProps) => {
   const [activeTab, setActiveTab] = useState<"persona" | "theme">("persona");
 
   return (
     <div
-      className={`h-full bg-muted/30 border-r border-border transition-all duration-300 ${isCollapsed ? "w-16" : "w-80"}`}
+      className={cn(
+        "h-full bg-muted/30 border-r border-border transition-all duration-300",
+        isCollapsed && !isMobile ? "w-16" : "w-80",
+        className,
+      )}
     >
       <div className="flex flex-col h-full">
         {/* Sidebar Header with collapse button */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          {!isCollapsed && <h2 className="font-semibold">Bolt.DIY</h2>}
+          {(!isCollapsed || isMobile) && (
+            <h2 className="font-semibold">Bolt.DIY</h2>
+          )}
           <Button
             variant="ghost"
             size="icon"
             onClick={onToggleCollapse}
             className="ml-auto"
+            aria-label={
+              isCollapsed && !isMobile ? "Expand sidebar" : "Collapse sidebar"
+            }
           >
-            {isCollapsed ? (
+            {isMobile ? (
+              <X size={18} />
+            ) : isCollapsed ? (
               <ChevronRight size={18} />
             ) : (
               <ChevronLeft size={18} />
@@ -35,7 +56,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse }: SidebarProps) => {
         </div>
 
         {/* Sidebar Tabs */}
-        {!isCollapsed ? (
+        {!isCollapsed || isMobile ? (
           <>
             <div className="flex border-b border-border">
               <Button

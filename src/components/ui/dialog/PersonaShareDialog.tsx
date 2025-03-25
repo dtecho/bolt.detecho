@@ -39,7 +39,7 @@ const PersonaShareDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-w-[90vw]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5 text-primary" />
@@ -55,7 +55,7 @@ const PersonaShareDialog = ({
               <Link className="h-4 w-4 text-muted-foreground mr-2" />
               <Input
                 ref={inputRef}
-                className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs sm:text-sm"
                 readOnly
                 value={shareableLink}
               />
@@ -65,7 +65,7 @@ const PersonaShareDialog = ({
             type="button"
             size="icon"
             onClick={handleCopy}
-            className="h-10 w-10"
+            className="h-10 w-10 flex-shrink-0"
           >
             {copied ? (
               <Check className="h-4 w-4" />
@@ -76,13 +76,13 @@ const PersonaShareDialog = ({
           </Button>
         </div>
         <div className="bg-muted/50 p-3 rounded-md text-sm text-muted-foreground mt-2">
-          <p>
+          <p className="text-xs sm:text-sm">
             When someone opens this link, they'll be able to import your persona
             with all its settings.
           </p>
         </div>
         <DialogFooter className="sm:justify-start">
-          <div className="flex gap-2 w-full justify-between">
+          <div className="flex gap-2 w-full justify-between flex-col sm:flex-row">
             <Button
               type="button"
               variant="secondary"

@@ -403,7 +403,7 @@ const PersonaManager = ({
           <ScrollArea
             className={`${isDashboard ? "h-[500px]" : "h-[calc(100vh-380px)]"} pr-4`}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {processedPersonas.map((persona) => (
                 <motion.div
                   key={persona.id}

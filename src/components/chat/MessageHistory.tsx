@@ -240,21 +240,21 @@ const MessageHistory = ({
           className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
         >
           <Card
-            className={`max-w-full ${message.sender === "user" ? "bg-blue-50 dark:bg-blue-950" : "bg-gray-50 dark:bg-slate-900"} p-4 shadow-sm`}
+            className={`max-w-[85%] sm:max-w-[75%] ${message.sender === "user" ? "bg-blue-50 dark:bg-blue-950" : "bg-gray-50 dark:bg-slate-900"} p-3 sm:p-4 shadow-sm`}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2 sm:gap-3">
               <Avatar
-                className={`h-8 w-8 ${message.sender === "user" ? "bg-blue-500" : "bg-emerald-500"}`}
+                className={`h-7 w-7 sm:h-8 sm:w-8 ${message.sender === "user" ? "bg-blue-500" : "bg-emerald-500"}`}
               >
                 {message.sender === "user" ? (
-                  <User className="h-5 w-5 text-white" />
+                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 ) : (
-                  <Bot className="h-5 w-5 text-white" />
+                  <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 )}
               </Avatar>
-              <div className="flex-1">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-medium">
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center mb-1 flex-wrap gap-1">
+                  <span className="font-medium text-sm sm:text-base">
                     {message.sender === "user"
                       ? "You"
                       : personaName || "Bolt.DIY"}
@@ -263,7 +263,9 @@ const MessageHistory = ({
                     {formatTime(message.timestamp)}
                   </span>
                 </div>
-                <div className="text-sm">{renderContent(message)}</div>
+                <div className="text-xs sm:text-sm break-words">
+                  {renderContent(message)}
+                </div>
               </div>
             </div>
           </Card>
