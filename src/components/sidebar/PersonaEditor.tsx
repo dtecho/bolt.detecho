@@ -64,7 +64,7 @@ import AlertDialog, {
 } from "@/components/ui/alert-dialog";
 import PersonaManager from "./PersonaManager";
 import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vs } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { vscDarkPlus as vsDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 

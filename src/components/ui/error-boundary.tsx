@@ -69,7 +69,26 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       );
     }
 
-    return this.props.children;
+    // Ensure children is a valid React element
+    const children = this.props.children;
+
+    // Handle different types of invalid children
+    if (children === null || children === undefined) {
+      return null;
+    }
+
+    // Handle case where children might be an object (like a module) instead of a component
+    if (typeof children === "object" && !React.isValidElement(children)) {
+      console.warn(
+        "Invalid React element provided to ErrorBoundary:",
+        children,
+      );
+      return (
+        <div className="p-4 bg-background">Invalid component provided</div>
+      );
+    }
+
+    return children;
   }
 }
 

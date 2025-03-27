@@ -1,11 +1,29 @@
-import { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./components/home";
 import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
 import { useRoutes } from "react-router-dom";
 import * as tempoRoutes from "tempo-routes";
-const routes = tempoRoutes.default || tempoRoutes;
+// Fix for Tempo routes - ensure we're getting a valid component
+const routes = (() => {
+  if (
+    typeof tempoRoutes.default === "function" ||
+    React.isValidElement(tempoRoutes.default)
+  ) {
+    return tempoRoutes.default;
+  }
+  if (Array.isArray(tempoRoutes.default)) {
+    return tempoRoutes.default;
+  }
+  if (typeof tempoRoutes === "function" || React.isValidElement(tempoRoutes)) {
+    return tempoRoutes;
+  }
+  if (Array.isArray(tempoRoutes)) {
+    return tempoRoutes;
+  }
+  return [];
+})();
 import { PersonaProvider, usePersona } from "./contexts/PersonaContext";
 import ErrorBoundary from "./components/ui/error-boundary";
 import { useToast } from "./components/ui/use-toast";

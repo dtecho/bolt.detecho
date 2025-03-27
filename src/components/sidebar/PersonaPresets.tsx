@@ -7,10 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import Button from "../ui/button";
+import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
-import { PlusCircle, Check, Trash2 } from "lucide-react";
-import Badge from "../ui/badge";
+import {
+  PlusCircle,
+  Check,
+  Trash2,
+  BookOpen,
+  Code,
+  Lightbulb,
+} from "lucide-react";
+import { Badge } from "../ui/badge";
 import {
   Tooltip,
   TooltipContent,
@@ -68,6 +75,13 @@ const DEFAULT_PERSONAS: Persona[] = [
   },
 ];
 
+// Map persona IDs to their respective icons
+const PERSONA_ICONS: Record<string, React.ReactNode> = {
+  "helpful-tutor": <BookOpen className="h-10 w-10 text-primary" />,
+  "code-reviewer": <Code className="h-10 w-10 text-primary" />,
+  "brainstorm-partner": <Lightbulb className="h-10 w-10 text-primary" />,
+};
+
 export default function PersonaPresets({
   selectedPersona,
   onSelectPersona,
@@ -92,61 +106,80 @@ export default function PersonaPresets({
       </CardHeader>
       <CardContent className="pb-2">
         <ScrollArea className="h-[300px] pr-4">
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-4">
             {personas.map((persona) => (
               <Card
                 key={persona.id}
-                className={`cursor-pointer hover:bg-accent/50 transition-colors ${selectedPersona?.id === persona.id ? "border-primary" : "border-border"}`}
+                className={`cursor-pointer hover:bg-accent/50 transition-colors overflow-hidden ${selectedPersona?.id === persona.id ? "border-primary border-2" : "border-border"}`}
                 onClick={() => onSelectPersona(persona)}
               >
-                <CardHeader className="p-3 pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-sm font-medium">
-                      {persona.name}
-                    </CardTitle>
-                    {selectedPersona?.id === persona.id && (
-                      <Check size={16} className="text-primary" />
-                    )}
-                  </div>
-                  {persona.isCustom && (
-                    <Badge variant="outline" className="text-xs">
-                      Custom
-                    </Badge>
+                <div className="relative">
+                  {selectedPersona?.id === persona.id && (
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
+                      <Check size={16} />
+                    </div>
                   )}
-                </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  <p className="text-xs text-muted-foreground">
-                    {persona.description}
-                  </p>
-                </CardContent>
-                <CardFooter className="p-3 pt-0 flex justify-between">
-                  <div className="flex flex-wrap gap-1">
-                    {persona.tone.slice(0, 2).map((t) => (
-                      <Badge key={t} variant="secondary" className="text-xs">
-                        {t}
-                      </Badge>
-                    ))}
+                  <div className="flex p-4">
+                    <div className="mr-4 flex items-center justify-center">
+                      {PERSONA_ICONS[persona.id] || (
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-primary font-bold text-lg">
+                            {persona.name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-sm mb-1 flex items-center">
+                        {persona.name}
+                        {persona.isCustom && (
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            Custom
+                          </Badge>
+                        )}
+                      </h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {persona.description}
+                      </p>
+                    </div>
                   </div>
-                  {persona.isCustom && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={(e) => handleDeletePersona(persona.id, e)}
-                          >
-                            <Trash2 size={14} />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Delete persona</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </CardFooter>
+                  <div className="px-4 pb-3">
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {persona.tone.map((t) => (
+                        <Badge key={t} variant="secondary" className="text-xs">
+                          {t}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="text-xs text-muted-foreground truncate max-w-[80%]">
+                        {persona.knowledgeDomains.slice(0, 2).join(", ")}
+                        {persona.knowledgeDomains.length > 2 && "..."}
+                      </div>
+                      {persona.isCustom && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) =>
+                                  handleDeletePersona(persona.id, e)
+                                }
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete persona</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </Card>
             ))}
           </div>
