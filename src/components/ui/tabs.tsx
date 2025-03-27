@@ -1,9 +1,22 @@
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
-import utils, { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
-const Tabs = TabsPrimitive.Root;
+// Create a context with a default value of false
+const TabsContext = React.createContext(false);
+
+const Tabs = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ children, ...props }, ref) => (
+  <TabsContext.Provider value={true}>
+    <TabsPrimitive.Root ref={ref} {...props}>
+      {children}
+    </TabsPrimitive.Root>
+  </TabsContext.Provider>
+));
+Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -38,16 +51,24 @@ TabsTrigger.displayName = TabsPrimitive.Trigger?.displayName || "TabsTrigger";
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  // Ensure TabsContent is used within Tabs
+  const isWithinTabs = React.useContext(TabsContext);
+  if (!isWithinTabs) {
+    throw new Error("`TabsContent` must be used within `Tabs`");
+  }
+
+  return (
+    <TabsPrimitive.Content
+      ref={ref}
+      className={cn(
+        "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 TabsContent.displayName = TabsPrimitive.Content?.displayName || "TabsContent";
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };

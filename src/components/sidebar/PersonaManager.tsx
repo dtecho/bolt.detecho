@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { usePersona, PersonaConfig } from "@/contexts/PersonaContext";
 import PersonaEditor from "./PersonaEditor";
+import PersonaCreationWizard from "./PersonaCreationWizard";
 import PersonaShareDialog from "@/components/ui/dialog/PersonaShareDialog";
 import { format } from "date-fns";
 
@@ -70,6 +71,7 @@ const PersonaManager = ({
     null,
   );
   const [isEditing, setIsEditing] = useState(false);
+  const [isCreatingWithWizard, setIsCreatingWithWizard] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState("");
   const [personaToDelete, setPersonaToDelete] = useState<string | null>(null);
@@ -117,12 +119,13 @@ const PersonaManager = ({
       onCreateNewPersona();
     } else {
       setSelectedPersona(null);
-      setIsEditing(true);
+      setIsCreatingWithWizard(true);
     }
   };
 
   const handleBackToList = () => {
     setIsEditing(false);
+    setIsCreatingWithWizard(false);
     setSelectedPersona(null);
     if (onBack) {
       onBack();
@@ -163,8 +166,8 @@ const PersonaManager = ({
     setSortOrder(sortOrder === "desc" ? "asc" : "desc");
   };
 
-  // Render the persona editor view
-  if (isEditing) {
+  // Render the persona editor or wizard view
+  if (isEditing || isCreatingWithWizard) {
     return (
       <div className="h-full flex flex-col">
         <div className="flex items-center mb-4">
@@ -182,10 +185,20 @@ const PersonaManager = ({
           </h2>
         </div>
         <div className="flex-1 overflow-hidden">
-          <PersonaEditor
-            presetPersonas={[]}
-            onSave={() => setIsEditing(false)}
-          />
+          {isEditing ? (
+            <PersonaEditor
+              presetPersonas={[]}
+              onSave={() => setIsEditing(false)}
+            />
+          ) : (
+            <PersonaCreationWizard
+              onComplete={(persona) => {
+                setIsCreatingWithWizard(false);
+              }}
+              onCancel={handleBackToList}
+              initialPersona={selectedPersona || undefined}
+            />
+          )}
         </div>
       </div>
     );
@@ -236,10 +249,28 @@ const PersonaManager = ({
             <Sparkles className="h-5 w-5 text-primary" />
             {isDashboard ? "Persona Management" : "Saved Personas"}
           </h2>
-          <Button onClick={handleCreateNewPersona} size="sm" className="gap-1">
-            <Plus className="h-4 w-4" />
-            Create New Persona
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCreateNewPersona}
+              size="sm"
+              className="gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              Create with Wizard
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              onClick={() => {
+                setSelectedPersona(null);
+                setIsEditing(true);
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Quick Create
+            </Button>
+          </div>
         </div>
 
         <div className="relative mb-4">
@@ -297,15 +328,27 @@ const PersonaManager = ({
                   ? "No personas match your search"
                   : "No saved personas yet"}
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCreateNewPersona}
-                className="mt-2"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Persona
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleCreateNewPersona}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create with Wizard
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedPersona(null);
+                    setIsEditing(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Quick Create
+                </Button>
+              </div>
             </div>
           ) : (
             <TabsContent value="grid" className="m-0">
