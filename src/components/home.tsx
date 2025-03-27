@@ -13,6 +13,7 @@ import {
   Terminal,
   Layers,
   Cpu,
+  Plus,
 } from "lucide-react";
 import {
   Card,
@@ -22,12 +23,15 @@ import {
   CardTitle,
 } from "./ui/card";
 import PersonaTestingPlayground from "./playground/PersonaTestingPlayground";
+import PersonaCreationWizard from "./sidebar/PersonaCreationWizard";
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 
 const Home = () => {
   const { toast } = useToast();
-  const { persona } = usePersona();
+  const { persona, savePersona } = usePersona();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [accentColor, setAccentColor] = useState("#0ea5e9");
+  const [showPersonaWizard, setShowPersonaWizard] = useState(false);
 
   useEffect(() => {
     // Check for saved theme preference
@@ -95,14 +99,14 @@ const Home = () => {
       showHeader={true}
       showFooter={false}
     >
-      <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-6">Bolt.DIY Workbench</h1>
-        <p className="text-lg text-muted-foreground mb-8">
+      <div className="container mx-auto py-10">
+        <h1 className="text-3xl font-bold mb-8">Bolt.DIY Workbench</h1>
+        <p className="text-lg text-muted-foreground mb-10">
           Your AI-powered development environment with integrated tools and
           features.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Card className="hover:shadow-md transition-all">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -210,7 +214,7 @@ const Home = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-all">
+          <Card className="hover:shadow-md transition-all border-primary/20 hover:border-primary">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Layers className="mr-2 h-5 w-5 text-primary" />
@@ -220,9 +224,33 @@ const Home = () => {
                 Create and customize AI personas with advanced settings.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button asChild className="w-full">
-                <Link to="/settings?tab=persona">Open Persona Editor</Link>
+            <CardContent className="flex flex-col gap-2">
+              <Dialog
+                open={showPersonaWizard}
+                onOpenChange={setShowPersonaWizard}
+              >
+                <DialogTrigger asChild>
+                  <Button className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create New Persona
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl h-[80vh]">
+                  <PersonaCreationWizard
+                    onComplete={(newPersona) => {
+                      setShowPersonaWizard(false);
+                      toast({
+                        title: "Persona Created",
+                        description: `Your "${newPersona.name}" persona has been created successfully.`,
+                        duration: 3000,
+                      });
+                    }}
+                    onCancel={() => setShowPersonaWizard(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/settings?tab=persona">Manage Personas</Link>
               </Button>
             </CardContent>
           </Card>
@@ -262,16 +290,16 @@ const Home = () => {
           </Card>
         </div>
 
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold mb-8">
             Persona Testing Playground
           </h2>
           <PersonaTestingPlayground className="h-[800px]" />
         </div>
 
-        <div className="mt-12 mb-8">
-          <h2 className="text-2xl font-bold mb-6">Quick Access</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mt-16 mb-10">
+          <h2 className="text-2xl font-bold mb-8">Quick Access</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Card>
               <CardHeader>
                 <CardTitle>Recent Projects</CardTitle>

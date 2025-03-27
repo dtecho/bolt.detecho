@@ -78,4 +78,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   );
 };
 
-export default ChatInterface;
+// Make sure we have a default export
+const ChatInterfaceDefault = ChatInterface;
+export default ChatInterfaceDefault;
