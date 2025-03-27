@@ -120,20 +120,24 @@ const Home = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-all">
+          <Card className="hover:shadow-md transition-all border-primary/20 hover:border-primary">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Layers className="mr-2 h-5 w-5 text-primary" />
-                Dashboard
+                Persona Dashboard
               </CardTitle>
               <CardDescription>
-                Access your persona management dashboard.
+                Access your persona management dashboard to create, edit, and
+                manage your AI personas.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-2">
               <Button asChild className="w-full">
                 <Link to="/dashboard">Open Dashboard</Link>
               </Button>
+              <p className="text-xs text-muted-foreground">
+                Manage all your custom AI personas in one place
+              </p>
             </CardContent>
           </Card>
 
