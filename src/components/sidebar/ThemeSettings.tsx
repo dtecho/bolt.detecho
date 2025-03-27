@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
@@ -50,6 +50,8 @@ export const getStoredAccentColor = (): string => {
 export const setStoredAccentColor = (color: string): void => {
   if (typeof window !== "undefined") {
     localStorage.setItem(ACCENT_COLOR_STORAGE_KEY, color);
+    // Also apply the color as a CSS variable for global access
+    document.documentElement.style.setProperty("--accent-color", color);
   }
 };
 
@@ -62,6 +64,17 @@ const ThemeSettings = () => {
   );
   const [fontSize, setFontSize] = React.useState<number>(16);
 
+  // Apply theme settings on component mount
+  useEffect(() => {
+    setStoredTheme(theme);
+    setStoredAccentColor(accentColor);
+    // Apply font size as a CSS variable
+    document.documentElement.style.setProperty(
+      "--font-size-base",
+      `${fontSize}px`,
+    );
+  }, [theme, accentColor, fontSize]);
+
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
@@ -71,6 +84,24 @@ const ThemeSettings = () => {
   const handleAccentColorChange = (color: string) => {
     setAccentColor(color);
     setStoredAccentColor(color);
+  };
+
+  const handleReset = () => {
+    // Reset to defaults
+    const defaultTheme = "light";
+    const defaultAccentColor = ACCENT_COLORS[0].value;
+    const defaultFontSize = 16;
+
+    setTheme(defaultTheme);
+    setAccentColor(defaultAccentColor);
+    setFontSize(defaultFontSize);
+
+    setStoredTheme(defaultTheme);
+    setStoredAccentColor(defaultAccentColor);
+    document.documentElement.style.setProperty(
+      "--font-size-base",
+      `${defaultFontSize}px`,
+    );
   };
 
   return (
@@ -136,7 +167,12 @@ const ThemeSettings = () => {
       </div>
 
       <div className="flex justify-end">
-        <Button size="sm" variant="outline" className="mr-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className="mr-2"
+          onClick={handleReset}
+        >
           Reset
         </Button>
         <Button size="sm">Apply</Button>

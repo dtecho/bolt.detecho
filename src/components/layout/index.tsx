@@ -23,12 +23,14 @@ const Layout = ({
 }: LayoutProps) => {
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar
-        isDarkMode={isDarkMode}
-        onThemeChange={onThemeChange}
-        accentColor={accentColor}
-        onAccentColorChange={onAccentColorChange}
-      />
+      <div className="h-full">
+        <Sidebar
+          isDarkMode={isDarkMode}
+          onThemeChange={onThemeChange}
+          accentColor={accentColor}
+          onAccentColorChange={onAccentColorChange}
+        />
+      </div>
       <main className="flex-1 overflow-hidden">
         {showHeader && (
           <header className="h-16 border-b flex items-center px-6">
