@@ -6,7 +6,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import ContentArea from "./ContentArea";
 import NavigationBar from "./NavigationBar";
-import SidebarComponent from "../sidebar/Sidebar";
+import Sidebar from "../sidebar/Sidebar";
 
 export {
   MainLayout,
@@ -17,6 +17,6 @@ export {
   Footer,
   ContentArea,
   NavigationBar,
-  SidebarComponent as Sidebar,
+  Sidebar,
 };
 export default Layout;
