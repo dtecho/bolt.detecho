@@ -2,6 +2,7 @@ import { Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./components/home";
 import Settings from "./pages/Settings";
+import Dashboard from "./pages/Dashboard";
 import { useRoutes } from "react-router-dom";
 import * as tempoRoutes from "tempo-routes";
 const routes = tempoRoutes.default || tempoRoutes;
@@ -60,6 +61,7 @@ function AppContent() {
       {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/code-editor" element={<CodeEditorChat />} />
         <Route
