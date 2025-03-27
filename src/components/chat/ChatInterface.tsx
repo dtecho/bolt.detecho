@@ -32,11 +32,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import MessageHistory from "./MessageHistory";
 import MessageInput from "./MessageInput";
-import { usePersona } from "@/contexts/PersonaContext";
+import { usePersona, PersonaConfig } from "@/contexts/PersonaContext";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vs } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vscDarkPlus as vsDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface Message {
   id: string;
@@ -94,22 +94,22 @@ const FallbackMessageHistory = React.memo(
               </div>
               {message.isMarkdown ? (
                 <ReactMarkdown
-                  className="prose dark:prose-invert prose-sm max-w-none"
                   components={{
-                    code({ node, inline, className, children, ...props }) {
+                    code(props) {
+                      const { children, className, ...rest } = props;
                       const match = /language-(\w+)/.exec(className || "");
-                      return !inline && match ? (
+                      return match ? (
                         <SyntaxHighlighter
-                          style={isDarkMode ? vscDarkPlus : vs}
+                          style={isDarkMode ? vsDark : vs}
                           language={match[1]}
                           PreTag="div"
                           className="rounded-md border border-muted my-2"
-                          {...props}
+                          {...rest}
                         >
                           {String(children).replace(/\n$/, "")}
                         </SyntaxHighlighter>
                       ) : (
-                        <code className={className} {...props}>
+                        <code className={className} {...rest}>
                           {children}
                         </code>
                       );
@@ -376,568 +376,356 @@ const ChatInterface = React.memo(
 
     // Import/Export state
     const [importStatus, setImportStatus] = useState<
-      "idle" | "success" | "error"
+      "idle" | "importing" | "success" | "error"
     >("idle");
-    const [importErrorMessage, setImportErrorMessage] = useState("");
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [exportStatus, setExportStatus] = useState<
+      "idle" | "exporting" | "success" | "error"
+    >("idle");
 
-    useEffect(() => {
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.attributeName === "class") {
-            const isDark = document.documentElement.classList.contains("dark");
-            setIsDarkMode(isDark);
-          }
-        });
-      });
+    const handleSendMessage = (content: string) => {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        content,
+        sender: "user",
+        timestamp: new Date(),
+      };
 
-      observer.observe(document.documentElement, { attributes: true });
+      setMessages((prev) => [...prev, newMessage]);
 
-      return () => observer.disconnect();
-    }, []);
+      // Generate AI response based on persona
+      setTimeout(() => {
+        const aiResponse = generatePersonaResponse(content, persona);
+        const responseMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: aiResponse,
+          sender: "assistant",
+          timestamp: new Date(),
+          isMarkdown: true,
+        };
+        setMessages((prev) => [...prev, responseMessage]);
+      }, 500);
+    };
 
     const toggleDarkMode = () => {
-      const newDarkMode = !isDarkMode;
-      document.documentElement.classList.toggle("dark", newDarkMode);
-      setIsDarkMode(newDarkMode);
-      localStorage.setItem(
-        "bolt-diy-dark-mode",
-        newDarkMode ? "dark" : "light",
-      );
+      const newMode = !isDarkMode;
+      setIsDarkMode(newMode);
+      document.documentElement.classList.toggle("dark", newMode);
     };
 
-    // Import/Export functions
-    const handleExportCurrentPersona = () => {
-      exportPersona("current");
-    };
-
-    const handleExportAllPersonas = () => {
-      // Create a combined JSON with all personas
-      const allPersonas = {
-        personas: savedPersonas,
-        exportDate: new Date().toISOString(),
-        version: "1.0",
-      };
-
-      // Create a file with all personas
-      const dataStr = JSON.stringify(allPersonas, null, 2);
-      const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-
-      // Create a download link and trigger it
-      const exportFileName = `bolt_diy_all_personas_${new Date().toISOString().slice(0, 10)}.json`;
-      const linkElement = document.createElement("a");
-      linkElement.setAttribute("href", dataUri);
-      linkElement.setAttribute("download", exportFileName);
-      linkElement.click();
-    };
-
-    const handleImportClick = () => {
-      if (fileInputRef.current) {
-        fileInputRef.current.click();
-      }
-    };
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setImportStatus("idle");
-      setImportErrorMessage("");
-
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      // Validate file size (limit to 1MB)
-      if (file.size > 1024 * 1024) {
-        setImportStatus("error");
-        setImportErrorMessage("File too large. Maximum size is 1MB.");
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        return;
-      }
-
-      // Validate file type
-      if (file.type !== "application/json" && !file.name.endsWith(".json")) {
-        setImportStatus("error");
-        setImportErrorMessage(
-          "Invalid file type. Only JSON files are supported.",
-        );
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        try {
-          // Check if it's a single persona or a collection
-          const parsed = JSON.parse(content);
-
-          if (parsed.personas && Array.isArray(parsed.personas)) {
-            // It's a collection of personas
-            let importedCount = 0;
-            for (const personaData of parsed.personas) {
-              const success = importPersona(JSON.stringify(personaData));
-              if (success) importedCount++;
-            }
-
-            if (importedCount > 0) {
-              setImportStatus("success");
-              setTimeout(() => setImportStatus("idle"), 3000);
-            } else {
-              setImportStatus("error");
-              setImportErrorMessage(
-                "Failed to import any personas. Invalid format.",
-              );
-            }
+    const handleComparisonToggle = () => {
+      if (!isComparisonMode && !comparisonPersona) {
+        // Initialize comparison with a different persona
+        const availablePersonas = Object.keys(savedPersonas);
+        if (availablePersonas.length > 0) {
+          // Find a persona different from current one
+          const differentPersona = availablePersonas.find(
+            (name) => name !== "current",
+          );
+          if (differentPersona) {
+            setComparisonPersona(savedPersonas[differentPersona]);
           } else {
-            // Try to import as a single persona
-            const success = importPersona(content);
-            if (success) {
-              setImportStatus("success");
-              setTimeout(() => setImportStatus("idle"), 3000);
-            } else {
-              setImportStatus("error");
-              setImportErrorMessage(
-                "Failed to import persona. Invalid format.",
-              );
-            }
+            // Create a different persona if none exists
+            const newPersona = {
+              ...persona,
+              tone: persona.tone === "friendly" ? "professional" : "friendly",
+            };
+            setComparisonPersona(newPersona);
           }
-
-          // Reset the file input
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
-        } catch (error) {
-          setImportStatus("error");
-          setImportErrorMessage("Failed to parse JSON. Invalid format.");
-          console.error("Import error:", error);
+        } else {
+          // Create a different persona if none exists
+          const newPersona = {
+            ...persona,
+            tone: persona.tone === "friendly" ? "professional" : "friendly",
+          };
+          setComparisonPersona(newPersona);
         }
-      };
+      }
 
-      reader.onerror = () => {
-        setImportStatus("error");
-        setImportErrorMessage("Error reading file. Please try again.");
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-      };
+      setIsComparisonMode(!isComparisonMode);
 
-      reader.readAsText(file);
+      if (!isComparisonMode) {
+        // Generate comparison responses
+        setIsGeneratingComparison(true);
+        setTimeout(() => {
+          const updatedComparisonMessages = messages
+            .filter((msg) => msg.sender === "user")
+            .flatMap((userMsg) => {
+              const userMessage = {
+                ...userMsg,
+                id: `comparison-${userMsg.id}`,
+              };
+
+              const aiResponse = comparisonPersona
+                ? generatePersonaResponse(userMsg.content, comparisonPersona)
+                : "Comparison persona not set";
+
+              const aiMessage: Message = {
+                id: `comparison-ai-${userMsg.id}`,
+                content: aiResponse,
+                sender: "assistant",
+                timestamp: new Date(),
+                isMarkdown: true,
+              };
+
+              return [userMessage, aiMessage];
+            });
+
+          setComparisonMessages(updatedComparisonMessages);
+          setIsGeneratingComparison(false);
+        }, 1000);
+      }
     };
 
-    // Function to generate welcome message for comparison persona
-    const generateComparisonWelcomeMessage = React.useCallback(
-      (selectedPersona: PersonaConfig) => {
-        setIsGeneratingComparison(true);
+    const handleExportPersona = () => {
+      setExportStatus("exporting");
+      setTimeout(() => {
         try {
-          // Clear previous messages if switching personas
-          setComparisonMessages([]);
-
-          // Generate welcome message
-          setTimeout(() => {
-            try {
-              const welcomeMessage = generatePersonaResponse(
-                "Hello",
-                selectedPersona,
-              );
-              setComparisonMessages([
-                {
-                  id: "comparison-1",
-                  content: welcomeMessage,
-                  sender: "assistant",
-                  timestamp: new Date(),
-                  isMarkdown: true,
-                },
-              ]);
-            } catch (error) {
-              console.error("Error generating welcome message:", error);
-              setComparisonMessages([
-                {
-                  id: "comparison-1",
-                  content: `Hello! I'm ${selectedPersona.name}. How can I help you today?`,
-                  sender: "assistant",
-                  timestamp: new Date(),
-                  isMarkdown: true,
-                },
-              ]);
-            } finally {
-              setIsGeneratingComparison(false);
-            }
-          }, 300);
+          exportPersona();
+          setExportStatus("success");
+          setTimeout(() => setExportStatus("idle"), 2000);
         } catch (error) {
-          console.error("Error in generateComparisonWelcomeMessage:", error);
-          setIsGeneratingComparison(false);
+          console.error("Error exporting persona:", error);
+          setExportStatus("error");
+          setTimeout(() => setExportStatus("idle"), 2000);
         }
-      },
-      [],
-    );
+      }, 500);
+    };
 
-    // Effect to sync comparison messages when toggling comparison mode off and on
-    React.useEffect(() => {
-      if (
-        isComparisonMode &&
-        comparisonPersona &&
-        comparisonMessages.length === 0
-      ) {
-        generateComparisonWelcomeMessage(comparisonPersona);
-      }
-    }, [
-      isComparisonMode,
-      comparisonPersona,
-      comparisonMessages.length,
-      generateComparisonWelcomeMessage,
-    ]);
-
-    const handleSendMessage = React.useCallback(
-      (content: string) => {
-        if (!content.trim()) return;
-
-        // Add user message
-        const userMessage: Message = {
-          id: Date.now().toString(),
-          content,
-          sender: "user",
-          timestamp: new Date(),
-          isMarkdown: false,
-        };
-
-        setMessages((prev) => [...prev, userMessage]);
-
-        // Simulate assistant response after a short delay
-        setTimeout(() => {
-          try {
-            // Generate a response that reflects the current persona settings
-            let responseContent = generatePersonaResponse(content, persona);
-
-            const assistantMessage: Message = {
-              id: (Date.now() + 1).toString(),
-              content: responseContent,
-              sender: "assistant",
-              timestamp: new Date(),
-              isMarkdown: true,
-            };
-
-            setMessages((prev) => [...prev, assistantMessage]);
-          } catch (error) {
-            console.error("Error generating response:", error);
-            // Send a fallback error message
-            const errorMessage: Message = {
-              id: (Date.now() + 1).toString(),
-              content:
-                "I'm sorry, I encountered an error while processing your request. Please try again.",
-              sender: "assistant",
-              timestamp: new Date(),
-              isMarkdown: true,
-            };
-            setMessages((prev) => [...prev, errorMessage]);
-          }
-        }, 1000);
-      },
-      [persona],
-    );
+    const handleImportPersona = () => {
+      setImportStatus("importing");
+      setTimeout(() => {
+        try {
+          importPersona();
+          setImportStatus("success");
+          setTimeout(() => setImportStatus("idle"), 2000);
+        } catch (error) {
+          console.error("Error importing persona:", error);
+          setImportStatus("error");
+          setTimeout(() => setImportStatus("idle"), 2000);
+        }
+      }, 500);
+    };
 
     return (
-      <div
-        className={`flex flex-col h-full bg-white dark:bg-slate-950 ${className}`}
-      >
-        {/* Hidden file input for imports */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept=".json"
-          className="hidden"
-        />
-
-        {/* Import status notifications */}
-        {importStatus === "success" && (
-          <div className="absolute top-4 right-4 z-50 p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-md flex items-center shadow-md">
-            <Check className="h-4 w-4 mr-2" />
-            <span className="text-sm">Persona imported successfully!</span>
-          </div>
-        )}
-
-        {importStatus === "error" && (
-          <div className="absolute top-4 right-4 z-50 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md flex items-center shadow-md">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            <span className="text-sm">{importErrorMessage}</span>
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b p-3 sm:p-4 gap-2 sm:gap-0">
+      <Card className={`flex flex-col h-full overflow-hidden ${className}`}>
+        <div className="flex items-center justify-between border-b p-3">
           <div className="flex items-center space-x-2">
             <MessageSquare className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold">Bolt.DIY</h2>
+            <h2 className="text-lg font-semibold">Chat</h2>
+            {isCustomized && (
+              <Badge variant="outline" className="ml-2 text-xs">
+                Custom Persona
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {enableComparison && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center mr-2">
+                      <Switch
+                        checked={isComparisonMode}
+                        onCheckedChange={handleComparisonToggle}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">Compare</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Compare responses with a different persona</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Info className="h-4 w-4" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleDarkMode}
+                    className="h-8 w-8"
+                  >
+                    {isDarkMode ? (
+                      <Sun className="h-4 w-4" />
+                    ) : (
+                      <Moon className="h-4 w-4" />
+                    )}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Customizable AI assistant</p>
+                  <p>Toggle theme</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          </div>
 
-          <div className="flex items-center space-x-2 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto justify-end">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleDarkMode}
-              className="h-8 w-8 rounded-full bg-background hover:bg-accent transition-all duration-200 flex-shrink-0"
-            >
-              {isDarkMode ? (
-                <Sun className="h-4 w-4 text-yellow-400" />
-              ) : (
-                <Moon className="h-4 w-4 text-slate-700" />
-              )}
-            </Button>
-
-            <Badge
-              variant={isCustomized ? "default" : "outline"}
-              className="flex items-center gap-1 flex-shrink-0 max-w-[120px] sm:max-w-none overflow-hidden text-ellipsis whitespace-nowrap"
-            >
-              <Sparkles className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">{persona.name}</span>
-            </Badge>
-
-            {/* Import/Export Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0"
-                >
-                  <FileJson className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Settings className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleExportCurrentPersona}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Current Persona
+                <DropdownMenuItem onClick={onOpenPersonaEditor}>
+                  <Zap className="h-4 w-4 mr-2" />
+                  Edit Persona
                 </DropdownMenuItem>
-                {savedPersonas.length > 0 && (
-                  <DropdownMenuItem onClick={handleExportAllPersonas}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export All Personas
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={handleImportClick}>
+                <DropdownMenuItem onClick={handleExportPersona}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Persona
+                  {exportStatus === "exporting" && "..."}
+                  {exportStatus === "success" && (
+                    <Check className="h-4 w-4 ml-2 text-green-500" />
+                  )}
+                  {exportStatus === "error" && (
+                    <AlertCircle className="h-4 w-4 ml-2 text-red-500" />
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportPersona}>
                   <Upload className="h-4 w-4 mr-2" />
                   Import Persona
+                  {importStatus === "importing" && "..."}
+                  {importStatus === "success" && (
+                    <Check className="h-4 w-4 ml-2 text-green-500" />
+                  )}
+                  {importStatus === "error" && (
+                    <AlertCircle className="h-4 w-4 ml-2 text-red-500" />
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <FileJson className="h-4 w-4 mr-2" />
+                  View JSON Config
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1 flex-shrink-0"
-              onClick={onOpenPersonaEditor}
-            >
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Customize</span>
-              <span className="sm:hidden">Edit</span>
-            </Button>
           </div>
         </div>
 
         <Tabs
+          defaultValue="chat"
+          className="flex-1 flex flex-col overflow-hidden"
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex-1 flex flex-col"
         >
-          <div className="border-b px-4">
+          <div className="border-b px-3">
             <TabsList className="h-10">
               <TabsTrigger
                 value="chat"
-                className="data-[state=active]:bg-background"
+                className="data-[state=active]:bg-muted"
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
                 Chat
               </TabsTrigger>
               <TabsTrigger
-                value="playground"
-                className="data-[state=active]:bg-background"
+                value="info"
+                className="data-[state=active]:bg-muted"
               >
-                <Zap className="h-4 w-4 mr-2" />
-                Playground
+                <Info className="h-4 w-4 mr-1" />
+                Info
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="chat" className="flex-1 flex flex-col p-0 m-0">
-            {enableComparison && (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b p-3 bg-muted/20 gap-2">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="comparison-mode"
-                    checked={isComparisonMode}
-                    onCheckedChange={(checked) => {
-                      setIsComparisonMode(checked);
-                      if (
-                        checked &&
-                        !comparisonPersona &&
-                        savedPersonas.length > 0
-                      ) {
-                        // Auto-select the first available persona that's not the current one
-                        const firstDifferentPersona = savedPersonas.find(
-                          (p) => p.id !== persona.id,
-                        );
-                        if (firstDifferentPersona) {
-                          setComparisonPersona(firstDifferentPersona);
-                          generateComparisonWelcomeMessage(
-                            firstDifferentPersona,
-                          );
-                        }
-                      }
-                    }}
-                  />
-                  <label
-                    htmlFor="comparison-mode"
-                    className="text-sm font-medium"
-                  >
-                    Comparison Mode
-                  </label>
-                </div>
-                {isComparisonMode && (
-                  <div className="flex items-center space-x-2 w-full sm:w-auto">
-                    <span className="text-sm font-medium whitespace-nowrap">
-                      Compare with:
-                    </span>
-                    <select
-                      className="text-sm border rounded-md p-1.5 bg-background focus:ring-1 focus:ring-primary w-full sm:w-auto"
-                      value={comparisonPersona?.id || ""}
-                      onChange={(e) => {
-                        const selectedPersona = savedPersonas.find(
-                          (p) => p.id === e.target.value,
-                        );
-                        if (selectedPersona) {
-                          setComparisonPersona(selectedPersona);
-                          generateComparisonWelcomeMessage(selectedPersona);
-                        }
-                      }}
-                      disabled={isGeneratingComparison}
-                    >
-                      <option value="" disabled>
-                        Select a persona
-                      </option>
-                      {savedPersonas
-                        .filter((p) => p.id !== persona.id)
-                        .map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name}
-                          </option>
-                        ))}
-                      {savedPersonas.filter((p) => p.id !== persona.id)
-                        .length === 0 && (
-                        <option value="" disabled>
-                          No other personas available
-                        </option>
-                      )}
-                    </select>
-                    {isGeneratingComparison && (
-                      <span className="text-xs text-muted-foreground animate-pulse whitespace-nowrap">
-                        Generating...
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+          <TabsContent
+            value="chat"
+            className="flex-1 flex flex-col overflow-hidden p-0"
+          >
             <div className="flex-1 overflow-hidden">
-              <MessageHistory
-                messages={messages}
-                comparisonMessages={comparisonMessages}
-                isComparison={isComparisonMode && !!comparisonPersona}
-                leftPersonaName={persona.name}
-                rightPersonaName={comparisonPersona?.name}
-              />
+              {isComparisonMode ? (
+                <div className="grid grid-cols-2 h-full">
+                  <div className="border-r overflow-hidden flex flex-col">
+                    <div className="p-2 bg-muted/50 text-center text-sm font-medium border-b">
+                      Current Persona
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <MessageHistory messages={messages} />
+                    </div>
+                  </div>
+                  <div className="overflow-hidden flex flex-col">
+                    <div className="p-2 bg-muted/50 text-center text-sm font-medium border-b">
+                      Comparison Persona
+                      {isGeneratingComparison && " (Generating...)"}
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      {isGeneratingComparison ? (
+                        <div className="flex items-center justify-center h-full">
+                          <div className="animate-pulse flex flex-col items-center">
+                            <Sparkles className="h-8 w-8 text-primary mb-2" />
+                            <p className="text-sm text-muted-foreground">
+                              Generating comparison responses...
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <MessageHistory messages={comparisonMessages} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <MessageHistory messages={messages} />
+              )}
             </div>
-            <MessageInput
-              onSendMessage={(content) => {
-                handleSendMessage(content);
-
-                // If in comparison mode, also generate a response with the comparison persona
-                if (isComparisonMode && comparisonPersona) {
-                  // Add user message to comparison messages
-                  const userMessage: Message = {
-                    id: `comparison-${Date.now().toString()}`,
-                    content,
-                    sender: "user",
-                    timestamp: new Date(),
-                    isMarkdown: false,
-                  };
-
-                  setComparisonMessages((prev) => [...prev, userMessage]);
-                  setIsGeneratingComparison(true);
-
-                  // Generate response with comparison persona
-                  setTimeout(() => {
-                    try {
-                      const responseContent = generatePersonaResponse(
-                        content,
-                        comparisonPersona,
-                      );
-
-                      const assistantMessage: Message = {
-                        id: `comparison-${(Date.now() + 1).toString()}`,
-                        content: responseContent,
-                        sender: "assistant",
-                        timestamp: new Date(),
-                        isMarkdown: true,
-                      };
-
-                      setComparisonMessages((prev) => [
-                        ...prev,
-                        assistantMessage,
-                      ]);
-                    } catch (error) {
-                      console.error(
-                        "Error generating comparison response:",
-                        error,
-                      );
-                      const errorMessage: Message = {
-                        id: `comparison-${(Date.now() + 1).toString()}`,
-                        content:
-                          "I'm sorry, I encountered an error while processing your request.",
-                        sender: "assistant",
-                        timestamp: new Date(),
-                        isMarkdown: true,
-                      };
-                      setComparisonMessages((prev) => [...prev, errorMessage]);
-                    } finally {
-                      setIsGeneratingComparison(false);
-                    }
-                  }, 1200); // Slightly delayed from the main response
-                }
-              }}
-            />
+            <div className="p-3 border-t">
+              <MessageInput onSendMessage={handleSendMessage} />
+            </div>
           </TabsContent>
 
-          <TabsContent value="playground" className="flex-1 p-4">
-            <Card className="h-full flex items-center justify-center p-6">
-              <div className="text-center space-y-4">
-                <Zap className="h-12 w-12 mx-auto text-primary" />
-                <h3 className="text-2xl font-bold">Playground Mode</h3>
-                <p className="text-muted-foreground max-w-md">
-                  Experiment with different persona settings and see how they
-                  affect the AI's responses in real-time.
-                </p>
-                <Button onClick={onOpenPersonaEditor}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Open Persona Editor
-                </Button>
+          <TabsContent value="info" className="flex-1 overflow-auto p-4">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">About this AI Assistant</h3>
+              <p>
+                This is a customizable AI assistant powered by Bolt.DIY. You can
+                adjust its persona to change how it responds to your messages.
+              </p>
+
+              <div className="bg-muted/50 p-3 rounded-md">
+                <h4 className="font-medium mb-2">Current Persona Settings:</h4>
+                <ul className="space-y-1 text-sm">
+                  <li>
+                    <span className="font-medium">Tone:</span> {persona.tone}
+                  </li>
+                  <li>
+                    <span className="font-medium">Formality:</span>{" "}
+                    {persona.formality}/100
+                  </li>
+                  <li>
+                    <span className="font-medium">Verbosity:</span>{" "}
+                    {persona.verbosity}/100
+                  </li>
+                  <li>
+                    <span className="font-medium">Creativity:</span>{" "}
+                    {persona.creativity}/100
+                  </li>
+                  <li>
+                    <span className="font-medium">Uses Emojis:</span>{" "}
+                    {persona.useEmojis ? "Yes" : "No"}
+                  </li>
+                  <li>
+                    <span className="font-medium">Uses Code Examples:</span>{" "}
+                    {persona.useCodeExamples ? "Yes" : "No"}
+                  </li>
+                  <li>
+                    <span className="font-medium">Knowledge Domains:</span>{" "}
+                    {persona.knowledgeDomains.join(", ") || "None specified"}
+                  </li>
+                </ul>
               </div>
-            </Card>
+
+              <Button
+                onClick={onOpenPersonaEditor}
+                className="w-full mt-4"
+                variant="outline"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Customize Persona
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </Card>
     );
   },
 );

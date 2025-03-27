@@ -65,10 +65,8 @@ import AlertDialog, {
 import PersonaManager from "./PersonaManager";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  vs,
-  vscDarkPlus,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vs } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vscDarkPlus as vsDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface PersonaEditorProps {
   onSave?: (persona: PersonaConfig) => void;
@@ -840,7 +838,7 @@ const PersonaEditor = React.memo(
                             );
                             return !inline && match ? (
                               <SyntaxHighlighter
-                                style={isDarkMode ? vscDarkPlus : vs}
+                                style={isDarkMode ? vsDark : vs}
                                 language={match[1]}
                                 PreTag="div"
                                 className="rounded-md border border-muted my-2 text-xs"

@@ -1,22 +1,11 @@
-import React, { useState } from "react";
-import Button from "../ui/button";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Settings,
-  User,
-  X,
-  Keyboard,
-} from "lucide-react";
+import React from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import PersonaEditor from "./PersonaEditor";
 import ThemeSettings from "./ThemeSettings";
-import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import PersonaPresets from "./PersonaPresets";
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -29,114 +18,86 @@ interface SidebarProps {
 const Sidebar = ({
   isCollapsed = false,
   isMobile = false,
-  isOpen = false,
+  isOpen = true,
   onToggleCollapse,
   className,
 }: SidebarProps) => {
-  const [activeTab, setActiveTab] = useState<"persona" | "theme">("persona");
-
   return (
-    <div
+    <aside
       className={cn(
-        "h-full bg-muted/30 border-r border-border transition-all duration-300",
-        isCollapsed && !isMobile ? "w-16" : "w-80",
+        "flex flex-col border-r bg-background",
+        isCollapsed ? "w-16" : "w-80",
         className,
       )}
     >
-      <div className="flex flex-col h-full">
-        {/* Sidebar Header with collapse button */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          {(!isCollapsed || isMobile) && (
-            <h2 className="font-semibold">Bolt.DIY</h2>
+      <div className="flex h-14 items-center justify-between border-b px-3 py-2">
+        <div
+          className={cn(
+            "flex items-center gap-2 font-semibold",
+            isCollapsed && "hidden",
           )}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onToggleCollapse}
-                  className="ml-auto"
-                  aria-label={
-                    isCollapsed && !isMobile
-                      ? "Expand sidebar"
-                      : "Collapse sidebar"
-                  }
-                >
-                  {isMobile ? (
-                    <X size={18} />
-                  ) : isCollapsed ? (
-                    <ChevronRight size={18} />
-                  ) : (
-                    <ChevronLeft size={18} />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>
-                  {isCollapsed && !isMobile
-                    ? "Expand sidebar"
-                    : "Collapse sidebar"}{" "}
-                  (Ctrl+B)
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        >
+          <span className="text-primary">Bolt.DIY</span>
+          <span className="text-muted-foreground">Workbench</span>
         </div>
-
-        {/* Sidebar Tabs */}
-        {!isCollapsed || isMobile ? (
-          <>
-            <div className="flex border-b border-border">
-              <Button
-                variant={activeTab === "persona" ? "subtle" : "ghost"}
-                className="flex-1 rounded-none py-2"
-                onClick={() => setActiveTab("persona")}
-              >
-                <User size={16} className="mr-2" />
-                Persona
-              </Button>
-              <Button
-                variant={activeTab === "theme" ? "subtle" : "ghost"}
-                className="flex-1 rounded-none py-2"
-                onClick={() => setActiveTab("theme")}
-              >
-                <Settings size={16} className="mr-2" />
-                Theme
-              </Button>
-            </div>
-
-            {/* Tab Content */}
-            <div className="flex-1 overflow-auto p-4">
-              {activeTab === "persona" ? <PersonaEditor /> : <ThemeSettings />}
-            </div>
-          </>
-        ) : (
-          <div className="flex flex-col items-center pt-4 space-y-4">
-            <Button
-              variant={activeTab === "persona" ? "subtle" : "ghost"}
-              size="icon"
-              onClick={() => {
-                setActiveTab("persona");
-                if (onToggleCollapse) onToggleCollapse();
-              }}
-            >
-              <User size={20} />
-            </Button>
-            <Button
-              variant={activeTab === "theme" ? "subtle" : "ghost"}
-              size="icon"
-              onClick={() => {
-                setActiveTab("theme");
-                if (onToggleCollapse) onToggleCollapse();
-              }}
-            >
-              <Settings size={20} />
-            </Button>
-          </div>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleCollapse}
+          className="h-8 w-8"
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
+        </Button>
       </div>
-    </div>
+
+      <ScrollArea
+        className={cn("flex-1 overflow-auto", isCollapsed ? "px-2" : "px-4")}
+      >
+        <div className="py-4">
+          {!isCollapsed && (
+            <>
+              <PersonaEditor />
+              <PersonaPresets />
+              <ThemeSettings />
+            </>
+          )}
+          {isCollapsed && (
+            <div className="flex flex-col items-center gap-4 py-4">
+              {/* Collapsed view icons */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                aria-label="Persona Editor"
+              >
+                <span className="text-xl">👤</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                aria-label="Presets"
+              >
+                <span className="text-xl">📋</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                aria-label="Theme Settings"
+              >
+                <span className="text-xl">🎨</span>
+              </Button>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </aside>
   );
 };
 

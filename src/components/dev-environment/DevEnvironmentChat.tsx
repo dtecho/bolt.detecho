@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import Button from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import CodeMirror from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { html } from "@codemirror/lang-html";
@@ -14,6 +16,7 @@ import FileExplorer from "./FileExplorer";
 import Terminal from "./Terminal";
 import MessageHistory from "@/components/chat/MessageHistory";
 import MessageInput from "@/components/chat/MessageInput";
+import { usePersona } from "@/contexts/PersonaContext";
 import {
   Save,
   Play,
@@ -24,6 +27,15 @@ import {
   Send,
   Code,
   Sparkles,
+  RefreshCw,
+  Download,
+  Copy,
+  Check,
+  Zap,
+  AlertCircle,
+  Lightbulb,
+  CheckCircle2,
+  Bug,
 } from "lucide-react";
 
 interface DevEnvironmentChatProps {
@@ -72,6 +84,7 @@ const getLanguageExtension = (filename: string) => {
 const DevEnvironmentChat: React.FC<DevEnvironmentChatProps> = ({
   className = "",
 }) => {
+  const { persona } = usePersona();
   const [files, setFiles] = useState<FileData[]>([
     {
       id: "1",
@@ -190,12 +203,28 @@ function formatDate(date) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content:
-        "Welcome to the Dev Environment Chat! I can help you with your code. What would you like to know?",
+      content: `Welcome to the Dev Environment Chat! I'm ${persona.name}, and I can help you with your code. What would you like to know?`,
       sender: "assistant",
       timestamp: new Date(),
     },
   ]);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [suggestions, setSuggestions] = useState<
+    Array<{
+      id: string;
+      type:
+        | "improvement"
+        | "bug"
+        | "performance"
+        | "security"
+        | "best-practice";
+      title: string;
+      description: string;
+      code?: string;
+      severity: "low" | "medium" | "high";
+      applied: boolean;
+    }>
+  >([]);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -214,6 +243,18 @@ function formatDate(date) {
 
     return () => observer.disconnect();
   }, []);
+
+  // Update welcome message when persona changes
+  useEffect(() => {
+    if (messages.length > 0 && messages[0].id === "welcome") {
+      const updatedMessages = [...messages];
+      updatedMessages[0] = {
+        ...updatedMessages[0],
+        content: `Welcome to the Dev Environment Chat! I'm ${persona.name}, and I can help you with your code. What would you like to know?`,
+      };
+      setMessages(updatedMessages);
+    }
+  }, [persona.name]);
 
   // Scroll to bottom of messages
   useEffect(() => {
@@ -461,6 +502,11 @@ function formatDate(date) {
 
     setMessages((prev) => [...prev, userMessage]);
 
+    // Analyze code if the message is about code analysis
+    if (content.toLowerCase().includes("analyze") && currentFile) {
+      analyzeCode();
+    }
+
     // Simulate AI response
     setTimeout(() => {
       let responseContent = "";
@@ -482,11 +528,18 @@ function formatDate(date) {
         content.toLowerCase().includes(keyword),
       );
 
+      // Personalize response based on persona settings
+      const greeting =
+        persona.tone === "friendly"
+          ? `${persona.useEmojis ? "😊 " : ""}I'd be happy to help with that!`
+          : persona.tone === "professional"
+            ? `${persona.useEmojis ? "📝 " : ""}Based on my analysis:`
+            : `${persona.useEmojis ? "💡 " : ""}Let me help you with that.`;
+
       if (isCodeRelated) {
         // Generate a response with code suggestions
         if (content.toLowerCase().includes("improve")) {
-          responseContent =
-            "Here's an improved version of your code with better error handling:";
+          responseContent = `${greeting} Here's an improved version of your code with better error handling:`;
           codeBlocks = [
             {
               language: currentFile?.language || "javascript",
@@ -500,8 +553,7 @@ function formatDate(date) {
           content.toLowerCase().includes("error") ||
           content.toLowerCase().includes("fix")
         ) {
-          responseContent =
-            "I found a potential issue in your code. Here's a fix:";
+          responseContent = `${greeting} I found a potential issue in your code. Here's a fix:`;
           codeBlocks = [
             {
               language: currentFile?.language || "javascript",
@@ -514,8 +566,7 @@ function formatDate(date) {
           content.toLowerCase().includes("optimize") ||
           content.toLowerCase().includes("refactor")
         ) {
-          responseContent =
-            "Here's a refactored version with better performance and readability:";
+          responseContent = `${greeting} Here's a refactored version with better performance and readability:`;
           codeBlocks = [
             {
               language: currentFile?.language || "javascript",
@@ -525,7 +576,7 @@ function formatDate(date) {
             },
           ];
         } else {
-          responseContent = "Based on your code, here's a suggestion:";
+          responseContent = `${greeting} Based on your code, here's a suggestion:`;
           codeBlocks = [
             {
               language: currentFile?.language || "javascript",
@@ -536,7 +587,7 @@ function formatDate(date) {
           ];
         }
       } else if (content.toLowerCase().includes("explain") && currentFile) {
-        responseContent = `Here's an explanation of your ${currentFile.name} file:`;
+        responseContent = `${greeting} Here's an explanation of your ${currentFile.name} file:`;
         codeBlocks = [
           {
             language: currentFile.language,
@@ -549,7 +600,18 @@ function formatDate(date) {
         );
       } else {
         // Generate a general response
-        responseContent = `I'm here to help with your code. You can ask me to improve, fix bugs, or optimize your code. I can also explain concepts or help you implement new features.`;
+        responseContent = `${greeting} I'm here to help with your code. You can ask me to improve, fix bugs, or optimize your code. I can also explain concepts or help you implement new features.`;
+
+        // Add more detailed response based on verbosity setting
+        if (persona.verbosity > 70) {
+          responseContent +=
+            "\n\nYou can try asking me to:\n" +
+            "1. Analyze your current code for potential issues\n" +
+            "2. Suggest improvements or optimizations\n" +
+            "3. Explain how specific parts of your code work\n" +
+            "4. Help you implement new features or functionality\n" +
+            "5. Debug errors or unexpected behavior";
+        }
       }
 
       const aiMessage: Message = {
@@ -603,6 +665,139 @@ function formatDate(date) {
       description: "The code suggestion has been applied to the current file.",
       duration: 3000,
     });
+  };
+
+  // Analyze code and generate suggestions
+  const analyzeCode = () => {
+    if (!currentFile) {
+      toast({
+        title: "No file selected",
+        description: "Please select a file to analyze.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    // Simulate analysis delay
+    setTimeout(() => {
+      // Generate suggestions based on code content
+      const newSuggestions = [];
+      const code = currentFile.content;
+      const language = currentFile.language;
+
+      // Check for console.log statements
+      if (code.includes("console.log")) {
+        newSuggestions.push({
+          id: `suggestion-${Date.now()}-1`,
+          type: "best-practice",
+          title: "Remove console.log statements",
+          description:
+            "Console statements should be removed in production code. Consider using a proper logging library instead.",
+          severity: "low",
+          applied: false,
+        });
+      }
+
+      // Check for missing error handling
+      if (code.includes("try") && !code.includes("catch")) {
+        newSuggestions.push({
+          id: `suggestion-${Date.now()}-2`,
+          type: "bug",
+          title: "Missing error handling",
+          description:
+            "You have a try block without a corresponding catch block. This could lead to unhandled exceptions.",
+          severity: "high",
+          applied: false,
+        });
+      }
+
+      // Check for function without parameter validation
+      if (
+        code.includes("function") &&
+        !code.includes("if") &&
+        code.includes("(")
+      ) {
+        newSuggestions.push({
+          id: `suggestion-${Date.now()}-3`,
+          type: "security",
+          title: "Add parameter validation",
+          description:
+            "Functions should validate their input parameters to prevent unexpected behavior.",
+          code: improveCode(code, language),
+          severity: "medium",
+          applied: false,
+        });
+      }
+
+      // Check for potential performance issues with string concatenation
+      if (code.includes("+") && code.includes("'")) {
+        newSuggestions.push({
+          id: `suggestion-${Date.now()}-4`,
+          type: "performance",
+          title: "Use template literals",
+          description:
+            "For better readability and performance, consider using template literals instead of string concatenation.",
+          code: code.replace(/['"](.*?)['"] \+ ['"](.*?)['"]/, "`$1$2`"),
+          severity: "low",
+          applied: false,
+        });
+      }
+
+      // Check for potential improvements
+      if (code.includes("function") && !code.includes("=>")) {
+        newSuggestions.push({
+          id: `suggestion-${Date.now()}-5`,
+          type: "improvement",
+          title: "Use arrow functions",
+          description:
+            "Consider using arrow functions for cleaner syntax and lexical this binding.",
+          code: optimizeCode(code, language),
+          severity: "low",
+          applied: false,
+        });
+      }
+
+      setSuggestions(newSuggestions);
+      setIsAnalyzing(false);
+
+      if (newSuggestions.length > 0) {
+        toast({
+          title: `${newSuggestions.length} suggestions found`,
+          description:
+            "Check the suggestions panel to see code improvement suggestions",
+          duration: 3000,
+        });
+      } else {
+        toast({
+          title: "Code analysis complete",
+          description: "No issues found in your code.",
+          duration: 3000,
+        });
+      }
+    }, 1000);
+  };
+
+  // Apply a suggestion to the code
+  const applySuggestion = (suggestion: any) => {
+    if (suggestion.code && currentFile) {
+      handleFileChange(suggestion.code);
+
+      // Mark suggestion as applied
+      setSuggestions(
+        suggestions.map((s) =>
+          s.id === suggestion.id ? { ...s, applied: true } : s,
+        ),
+      );
+
+      toast({
+        title: "Suggestion applied",
+        description: suggestion.title,
+        duration: 3000,
+      });
+    }
   };
 
   // Helper functions for code suggestions (simplified for demo)
@@ -805,62 +1000,252 @@ function formatDate(date) {
             <ResizablePanel defaultSize={40}>
               <Card className="h-full flex flex-col border-0 rounded-none">
                 <div className="p-3 border-b">
-                  <div className="flex items-center">
-                    <Sparkles className="h-4 w-4 mr-2 text-primary" />
-                    <h3 className="text-sm font-medium">AI Code Suggestions</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Sparkles className="h-4 w-4 mr-2 text-primary" />
+                      <h3 className="text-sm font-medium">
+                        AI Code Suggestions
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={analyzeCode}
+                        disabled={isAnalyzing || !currentFile}
+                        className="gap-1 h-8"
+                      >
+                        {isAnalyzing ? (
+                          <RefreshCw className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Zap className="h-3 w-3" />
+                        )}
+                        {isAnalyzing ? "Analyzing..." : "Analyze Code"}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <CardContent className="flex-1 p-4 overflow-auto">
-                  {messages.length > 0 &&
-                  messages[messages.length - 1].codeBlocks ? (
-                    <div className="space-y-4">
-                      <p className="text-sm">
-                        {messages[messages.length - 1].content}
-                      </p>
-                      {messages[messages.length - 1].codeBlocks?.map(
-                        (block, index) => (
-                          <div
-                            key={index}
-                            className="border rounded-md overflow-hidden"
-                          >
-                            <div className="bg-muted p-2 flex justify-between items-center">
-                              <span className="text-xs font-medium">
-                                {block.language.toUpperCase()}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  handleApplyCodeSuggestion(block.code)
-                                }
-                                className="h-7 text-xs"
-                              >
-                                Apply Suggestion
-                              </Button>
-                            </div>
-                            <div className="p-3 bg-card">
-                              <pre className="text-xs overflow-auto whitespace-pre-wrap">
-                                <code>{block.code}</code>
-                              </pre>
-                            </div>
-                          </div>
-                        ),
+                <Tabs
+                  defaultValue="suggestions"
+                  className="flex-1 flex flex-col"
+                >
+                  <div className="px-3 border-b">
+                    <TabsList className="w-full">
+                      <TabsTrigger
+                        value="suggestions"
+                        className="flex-1 text-xs"
+                      >
+                        Suggestions{" "}
+                        {suggestions.length > 0 && `(${suggestions.length})`}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="chat-suggestions"
+                        className="flex-1 text-xs"
+                      >
+                        Chat Suggestions
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
+
+                  <TabsContent
+                    value="suggestions"
+                    className="flex-1 p-0 m-0 data-[state=active]:flex flex-col"
+                  >
+                    <ScrollArea className="flex-1 p-4">
+                      {suggestions.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                          <Lightbulb className="h-12 w-12 mb-4 opacity-20" />
+                          <h3 className="text-lg font-medium mb-2">
+                            No Code Suggestions Yet
+                          </h3>
+                          <p className="text-sm max-w-md">
+                            Click "Analyze Code" to get AI suggestions for your
+                            current file.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {suggestions.map((suggestion) => (
+                            <Card
+                              key={suggestion.id}
+                              className={`overflow-hidden transition-all ${suggestion.applied ? "opacity-60" : ""}`}
+                            >
+                              <div className="p-3">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-start gap-2">
+                                    {suggestion.type === "bug" && (
+                                      <Bug className="h-4 w-4 text-red-500 mt-0.5" />
+                                    )}
+                                    {suggestion.type === "improvement" && (
+                                      <Lightbulb className="h-4 w-4 text-amber-500 mt-0.5" />
+                                    )}
+                                    {suggestion.type === "performance" && (
+                                      <Zap className="h-4 w-4 text-blue-500 mt-0.5" />
+                                    )}
+                                    {suggestion.type === "security" && (
+                                      <AlertCircle className="h-4 w-4 text-red-600 mt-0.5" />
+                                    )}
+                                    {suggestion.type === "best-practice" && (
+                                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
+                                    )}
+                                    <div>
+                                      <h4 className="text-sm font-medium">
+                                        {suggestion.title}
+                                      </h4>
+                                      <p className="text-xs text-muted-foreground mt-0.5">
+                                        {suggestion.description}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Badge
+                                    variant={
+                                      suggestion.severity === "high"
+                                        ? "destructive"
+                                        : suggestion.severity === "medium"
+                                          ? "default"
+                                          : "outline"
+                                    }
+                                    className="text-[10px] h-5"
+                                  >
+                                    {suggestion.severity}
+                                  </Badge>
+                                </div>
+
+                                {suggestion.code && (
+                                  <div className="mt-2 text-xs bg-muted p-2 rounded-md font-mono overflow-x-auto">
+                                    {suggestion.code
+                                      .split("\n")
+                                      .slice(0, 5)
+                                      .map((line: string, i: number) => (
+                                        <div key={i} className="whitespace-pre">
+                                          {line}
+                                        </div>
+                                      ))}
+                                    {suggestion.code.split("\n").length > 5 && (
+                                      <div className="text-muted-foreground">
+                                        ...
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                <div className="mt-2 flex justify-end gap-2">
+                                  {suggestion.code && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 text-xs"
+                                      onClick={() =>
+                                        applySuggestion(suggestion)
+                                      }
+                                      disabled={suggestion.applied}
+                                    >
+                                      {suggestion.applied ? "Applied" : "Apply"}
+                                    </Button>
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 text-xs"
+                                    onClick={() => {
+                                      // Remove this suggestion
+                                      setSuggestions(
+                                        suggestions.filter(
+                                          (s) => s.id !== suggestion.id,
+                                        ),
+                                      );
+                                    }}
+                                  >
+                                    Dismiss
+                                  </Button>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
                       )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                      <Code className="h-12 w-12 mb-4 opacity-20" />
-                      <h3 className="text-lg font-medium mb-2">
-                        No Code Suggestions Yet
-                      </h3>
-                      <p className="text-sm max-w-md">
-                        Send your code to the AI assistant using the "Ask AI"
-                        button or switch to the chat panel to ask questions
-                        about your code.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
+                    </ScrollArea>
+                  </TabsContent>
+
+                  <TabsContent
+                    value="chat-suggestions"
+                    className="flex-1 p-0 m-0 data-[state=active]:flex flex-col"
+                  >
+                    <ScrollArea className="flex-1 p-4">
+                      {messages.length > 0 &&
+                      messages[messages.length - 1].codeBlocks ? (
+                        <div className="space-y-4">
+                          <p className="text-sm">
+                            {messages[messages.length - 1].content}
+                          </p>
+                          {messages[messages.length - 1].codeBlocks?.map(
+                            (block, index) => (
+                              <div
+                                key={index}
+                                className="border rounded-md overflow-hidden"
+                              >
+                                <div className="bg-muted p-2 flex justify-between items-center">
+                                  <span className="text-xs font-medium">
+                                    {block.language.toUpperCase()}
+                                  </span>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          block.code,
+                                        );
+                                        toast({
+                                          title: "Code copied",
+                                          description:
+                                            "Code copied to clipboard",
+                                          duration: 2000,
+                                        });
+                                      }}
+                                      className="h-7 text-xs gap-1"
+                                    >
+                                      <Copy className="h-3 w-3" />
+                                      Copy
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleApplyCodeSuggestion(block.code)
+                                      }
+                                      className="h-7 text-xs gap-1"
+                                    >
+                                      <Check className="h-3 w-3" />
+                                      Apply
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className="p-3 bg-card">
+                                  <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                                    <code>{block.code}</code>
+                                  </pre>
+                                </div>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                          <Code className="h-12 w-12 mb-4 opacity-20" />
+                          <h3 className="text-lg font-medium mb-2">
+                            No Chat Suggestions Yet
+                          </h3>
+                          <p className="text-sm max-w-md">
+                            Send your code to the AI assistant using the "Ask
+                            AI" button or switch to the chat panel to ask
+                            questions about your code.
+                          </p>
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </TabsContent>
+                </Tabs>
               </Card>
             </ResizablePanel>
           </ResizablePanelGroup>

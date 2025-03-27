@@ -9,6 +9,7 @@ import { PersonaProvider, usePersona } from "./contexts/PersonaContext";
 import { useToast } from "./components/ui/use-toast";
 import CodeEditorChat from "./components/editor/CodeEditorChat";
 import PersonaTestingPlayground from "./components/playground/PersonaTestingPlayground";
+import DevEnvironmentChat from "./components/dev-environment/DevEnvironmentChat";
 
 function AppContent() {
   const location = useLocation();
@@ -65,6 +66,7 @@ function AppContent() {
           path="/persona-testing"
           element={<PersonaTestingPlayground className="h-screen p-6" />}
         />
+        <Route path="/dev-environment" element={<DevEnvironmentChat />} />
         {/* Add this line to allow Tempo to capture routes before any catchall */}
         {import.meta.env.VITE_TEMPO === "true" && (
           <Route path="/tempobook/*" element={<></>} />

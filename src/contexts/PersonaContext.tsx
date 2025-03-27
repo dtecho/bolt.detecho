@@ -55,6 +55,7 @@ interface PersonaContextType {
   savePersonaVersion: (personaId: string, notes?: string) => void;
   restorePersonaVersion: (personaId: string, timestamp: number) => void;
   deletePersonaVersion: (personaId: string, timestamp: number) => void;
+  updatePersona?: (updates: Partial<PersonaConfig>) => void;
 }
 
 const STORAGE_KEY = "bolt_diy_saved_personas";
@@ -321,6 +322,15 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(newVersions));
   };
 
+  // Update the persona
+  const updatePersona = (updates: Partial<PersonaConfig>) => {
+    setPersonaState((prev) => {
+      const updated = { ...prev, ...updates };
+      setIsCustomized(true);
+      return updated;
+    });
+  };
+
   return (
     <PersonaContext.Provider
       value={{
@@ -340,6 +350,7 @@ export const PersonaProvider: React.FC<{ children: React.ReactNode }> = ({
         savePersonaVersion,
         restorePersonaVersion,
         deletePersonaVersion,
+        updatePersona,
       }}
     >
       {children}

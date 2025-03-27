@@ -4,7 +4,13 @@ import { useToast } from "./ui/use-toast";
 import { usePersona } from "@/contexts/PersonaContext";
 import Button from "./ui/button";
 import { Link } from "react-router-dom";
-import { Code, MessageSquare, Settings, Sparkles } from "lucide-react";
+import {
+  Code,
+  MessageSquare,
+  Settings,
+  Sparkles,
+  FileCode,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -93,7 +99,7 @@ const Home = () => {
           features.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="hover:shadow-md transition-all">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -142,6 +148,23 @@ const Home = () => {
             <CardContent>
               <Button asChild className="w-full">
                 <Link to="/persona-testing">Open Playground</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-all">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileCode className="mr-2 h-5 w-5 text-primary" />
+                Dev Environment
+              </CardTitle>
+              <CardDescription>
+                Integrated development environment with AI assistance.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/dev-environment">Open Dev Environment</Link>
               </Button>
             </CardContent>
           </Card>
