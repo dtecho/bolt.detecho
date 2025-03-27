@@ -308,27 +308,55 @@ const Home = () => {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {savedPersonas.map((p) => (
-                    <li
-                      key={p.id}
-                      className="p-2 hover:bg-accent rounded-md transition-colors"
+                  {/* Sample personas - replace with actual data when available */}
+                  <li className="p-2 hover:bg-accent rounded-md transition-colors">
+                    <button
+                      onClick={() => {
+                        // Update persona when functionality is available
+                        toast({
+                          title: "Persona Loaded",
+                          description: `Switched to "Helpful Tutor" persona`,
+                          duration: 3000,
+                        });
+                      }}
+                      className="flex items-center w-full text-left"
                     >
-                      <button
-                        onClick={() => {
-                          loadPersona(p.id || "");
-                          toast({
-                            title: "Persona Loaded",
-                            description: `Switched to "${p.name}" persona`,
-                            duration: 3000,
-                          });
-                        }}
-                        className="flex items-center w-full text-left"
-                      >
-                        <Sparkles className="mr-2 h-4 w-4 text-primary" />
-                        <span>{p.name}</span>
-                      </button>
-                    </li>
-                  ))}
+                      <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                      <span>Helpful Tutor</span>
+                    </button>
+                  </li>
+                  <li className="p-2 hover:bg-accent rounded-md transition-colors">
+                    <button
+                      onClick={() => {
+                        // Update persona when functionality is available
+                        toast({
+                          title: "Persona Loaded",
+                          description: `Switched to "Code Reviewer" persona`,
+                          duration: 3000,
+                        });
+                      }}
+                      className="flex items-center w-full text-left"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                      <span>Code Reviewer</span>
+                    </button>
+                  </li>
+                  <li className="p-2 hover:bg-accent rounded-md transition-colors">
+                    <button
+                      onClick={() => {
+                        // Update persona when functionality is available
+                        toast({
+                          title: "Persona Loaded",
+                          description: `Switched to "Brainstorm Partner" persona`,
+                          duration: 3000,
+                        });
+                      }}
+                      className="flex items-center w-full text-left"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                      <span>Brainstorm Partner</span>
+                    </button>
+                  </li>
                 </ul>
               </CardContent>
             </Card>
