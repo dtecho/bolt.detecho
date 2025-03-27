@@ -5,5 +5,5 @@ import { twMerge } from "tailwind-merge";
  * Combines multiple class names using clsx and applies Tailwind's merge strategy
  */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(...inputs));
 }

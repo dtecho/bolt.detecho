@@ -1,8 +1,14 @@
 import React, { useState } from "react";
-import { X, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { X, Plus, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Button from "@/components/ui/button";
 import Badge from "@/components/ui/badge";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "react-beautiful-dnd";
 
 interface KnowledgeDomainSelectorProps {
   domains: string[];
@@ -67,6 +73,24 @@ const KnowledgeDomainSelector = React.memo(
       [handleAddDomain],
     );
 
+    const handleDragEnd = React.useCallback(
+      (result: DropResult) => {
+        if (!result.destination) return;
+
+        const sourceIndex = result.source.index;
+        const destinationIndex = result.destination.index;
+
+        if (sourceIndex === destinationIndex) return;
+
+        const updatedDomains = [...domains];
+        const [removed] = updatedDomains.splice(sourceIndex, 1);
+        updatedDomains.splice(destinationIndex, 0, removed);
+
+        onChange(updatedDomains);
+      },
+      [domains, onChange],
+    );
+
     return (
       <div className="space-y-3">
         <div className="flex space-x-2">
@@ -87,52 +111,74 @@ const KnowledgeDomainSelector = React.memo(
           </Button>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-2">
-          {domains.length === 0 && (
-            <div className="text-sm text-muted-foreground italic">
-              No knowledge domains added
-            </div>
-          )}
-          {domains.map((domain, index) => (
-            <div
-              key={domain}
-              className="group flex items-center gap-1 bg-secondary text-secondary-foreground rounded-md pl-2 pr-1 py-1"
-            >
-              <span className="text-sm">{domain}</span>
-              <div className="flex">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-5 w-5 p-0 opacity-70 hover:opacity-100"
-                  onClick={() => handleMoveDomain(index, "up")}
-                  disabled={index === 0}
-                >
-                  <ChevronUp className="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-5 w-5 p-0 opacity-70 hover:opacity-100"
-                  onClick={() => handleMoveDomain(index, "down")}
-                  disabled={index === domains.length - 1}
-                >
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-5 w-5 p-0 text-destructive opacity-70 hover:opacity-100"
-                  onClick={() => handleRemoveDomain(domain)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="domains-list">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="space-y-2 mt-2"
+              >
+                {domains.length === 0 && (
+                  <div className="text-sm text-muted-foreground italic">
+                    No knowledge domains added
+                  </div>
+                )}
+                {domains.map((domain, index) => (
+                  <Draggable key={domain} draggableId={domain} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`group flex items-center gap-1 bg-secondary text-secondary-foreground rounded-md pl-2 pr-1 py-1 ${snapshot.isDragging ? "opacity-80 shadow-lg" : ""}`}
+                      >
+                        <div
+                          {...provided.dragHandleProps}
+                          className="cursor-grab mr-1 text-muted-foreground hover:text-foreground"
+                        >
+                          <GripVertical className="h-3 w-3" />
+                        </div>
+                        <span className="text-sm flex-grow">{domain}</span>
+                        <div className="flex">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 p-0 opacity-70 hover:opacity-100"
+                            onClick={() => handleMoveDomain(index, "up")}
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 p-0 opacity-70 hover:opacity-100"
+                            onClick={() => handleMoveDomain(index, "down")}
+                            disabled={index === domains.length - 1}
+                          >
+                            <ChevronDown className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 p-0 text-destructive opacity-70 hover:opacity-100"
+                            onClick={() => handleRemoveDomain(domain)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
     );
   },
