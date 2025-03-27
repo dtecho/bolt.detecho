@@ -44,7 +44,7 @@ import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 interface Message {
   id: string;
   content: string;
-  sender: "user" | "assistant";
+  sender: "user" | "assistant" | "system";
   timestamp: Date;
   codeBlocks?: Array<{
     language: string;
@@ -56,6 +56,8 @@ interface CodeEditorChatProps {
   initialCode?: string;
   initialLanguage?: string;
   className?: string;
+  onTerminalCommand?: (command: string, output: string[]) => void;
+  terminalOutput?: string[];
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -94,6 +96,8 @@ const CodeEditorChat: React.FC<CodeEditorChatProps> = ({
   initialCode = DEFAULT_CODE,
   initialLanguage = "javascript",
   className = "",
+  onTerminalCommand,
+  terminalOutput,
 }) => {
   const [code, setCode] = useState<string>(initialCode);
   const [language, setLanguage] = useState<string>(initialLanguage);
@@ -183,6 +187,32 @@ const CodeEditorChat: React.FC<CodeEditorChatProps> = ({
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Update welcome message when persona changes
+  useEffect(() => {
+    if (messages.length > 0 && messages[0].id === "welcome") {
+      const updatedMessages = [...messages];
+      updatedMessages[0] = {
+        ...updatedMessages[0],
+        content: `Welcome to the Code Editor Chat! I'm ${persona.name}, and I can help you with your code. What would you like to do?`,
+      };
+      setMessages(updatedMessages);
+    }
+  }, [persona.name, messages]);
+
+  // Handle terminal output changes
+  useEffect(() => {
+    if (terminalOutput && terminalOutput.length > 0) {
+      // Add terminal output as a system message
+      const terminalMessage = {
+        id: `terminal-${Date.now()}`,
+        content: `Terminal output:\n\`\`\`\n${terminalOutput.join("\n")}\n\`\`\``,
+        sender: "system",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, terminalMessage]);
+    }
+  }, [terminalOutput]);
 
   // Generate code suggestions when code changes if real-time assistance is enabled
   useEffect(() => {
@@ -447,6 +477,11 @@ console.log(greet('Developer'));`,
   };
 
   const handleRunCode = () => {
+    // If terminal command handler is provided, send the run command to terminal
+    if (onTerminalCommand) {
+      onTerminalCommand("run", [`Running code in terminal...`]);
+    }
+
     try {
       // Create a safe environment to run the code
       const originalConsoleLog = console.log;

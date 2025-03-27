@@ -1,13 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { usePersona } from "@/contexts/PersonaContext";
 
 interface TerminalProps {
   output: string[];
   onCommand: (command: string) => void;
+  onSendToChat?: (output: string[]) => void;
+  onCodeExecution?: (code: string) => void;
+  currentCode?: string;
 }
 
-const Terminal: React.FC<TerminalProps> = ({ output, onCommand }) => {
+const Terminal: React.FC<TerminalProps> = ({
+  output,
+  onCommand,
+  onSendToChat,
+  onCodeExecution,
+  currentCode,
+}) => {
   const [command, setCommand] = useState("");
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -29,15 +39,58 @@ const Terminal: React.FC<TerminalProps> = ({ output, onCommand }) => {
     }
   }, []);
 
+  const { persona } = usePersona();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (command.trim()) {
-      onCommand(command);
+      // Special commands for integration with chat and editor
+      if (command.startsWith("chat ")) {
+        const message = command.substring(5).trim();
+        if (message && onSendToChat) {
+          onSendToChat([`User sent message to chat: ${message}`]);
+        }
+      } else if (command === "run" && currentCode && onCodeExecution) {
+        onCodeExecution(currentCode);
+      } else if (command === "help") {
+        // Enhanced help command with AI assistant integration info
+        onCommand(command);
+        setTimeout(() => {
+          const aiHelpOutput = [
+            "AI Assistant Integration:",
+            "  chat [message] - Send a message to the AI assistant",
+            "  run - Execute the current code in the editor",
+            "  explain - Ask the AI to explain the current code",
+            "  improve - Ask the AI for code improvement suggestions",
+            `  persona - Show current AI persona (${persona.name})`,
+          ];
+          onCommand("ai-help", aiHelpOutput);
+        }, 100);
+      } else if (command === "persona" && onSendToChat) {
+        onSendToChat([
+          `Current AI Persona: ${persona.name}`,
+          `Description: ${persona.description}`,
+          `Tone: ${persona.tone}`,
+        ]);
+      } else if (command === "explain" && currentCode && onSendToChat) {
+        onSendToChat([`User requested code explanation. Analyzing code...`]);
+        // In a real implementation, this would trigger the AI to analyze the code
+      } else if (command === "improve" && currentCode && onSendToChat) {
+        onSendToChat([`User requested code improvements. Analyzing code...`]);
+        // In a real implementation, this would trigger the AI to suggest improvements
+      } else {
+        // Regular command handling
+        onCommand(command);
+      }
+
       setCommandHistory((prev) => [...prev, command]);
       setCommand("");
       setHistoryIndex(-1);
     }
   };
+
+  // Add command completion for AI-related commands
+  const aiCommands = ["chat", "run", "explain", "improve", "persona"];
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Handle up arrow for command history
@@ -75,6 +128,10 @@ const Terminal: React.FC<TerminalProps> = ({ output, onCommand }) => {
         "run",
         "echo",
         "date",
+        "chat",
+        "explain",
+        "improve",
+        "persona",
       ];
       const matchingCommands = commonCommands.filter((cmd) =>
         cmd.startsWith(command),

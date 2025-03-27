@@ -327,12 +327,18 @@ function formatDate(date) {
     }
   };
 
-  const handleTerminalCommand = (command: string) => {
+  const handleTerminalCommand = (command: string, customOutput?: string[]) => {
     const commandParts = command.trim().split(" ");
     const mainCommand = commandParts[0].toLowerCase();
     const args = commandParts.slice(1);
 
     setTerminalOutput((prev) => [...prev, `$ ${command}`]);
+
+    // If custom output is provided (for AI integration commands), use it
+    if (customOutput) {
+      setTerminalOutput((prev) => [...prev, ...customOutput]);
+      return;
+    }
 
     switch (mainCommand) {
       case "help":
@@ -347,6 +353,10 @@ function formatDate(date) {
           "  echo [text] - Display text",
           "  date - Show current date and time",
           "  chat - Switch to chat panel",
+          "  chat [message] - Send a message to the AI assistant",
+          "  explain - Ask the AI to explain the current code",
+          "  improve - Ask the AI for code improvement suggestions",
+          "  persona - Show current AI persona settings",
         ]);
         break;
 
@@ -973,6 +983,17 @@ function formatDate(date) {
                     <Terminal
                       output={terminalOutput}
                       onCommand={handleTerminalCommand}
+                      onSendToChat={(output) => {
+                        setActivePanel("chat");
+                        const message = output.join("\n");
+                        handleSendMessage(message);
+                      }}
+                      onCodeExecution={(code) => {
+                        if (currentFile) {
+                          handleRunCode();
+                        }
+                      }}
+                      currentCode={currentFile?.content}
                     />
                   </TabsContent>
                   <TabsContent
