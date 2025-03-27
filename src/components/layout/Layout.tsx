@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import MainLayout from "./MainLayout";
+import { MainLayout } from "./index";
 import { Toaster } from "@/components/ui/toaster";
 import { motion } from "framer-motion";
 import {
