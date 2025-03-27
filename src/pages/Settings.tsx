@@ -259,3 +259,65 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Label htmlFor="dark-mode">Dark Mode</Label>
                   <p className="text-sm text-muted-foreground">
+                    Enable dark mode for a more comfortable viewing experience
+                    in low light.
+                  </p>
+                </div>
+                <Switch
+                  id="dark-mode"
+                  checked={darkMode}
+                  onCheckedChange={setDarkMode}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="accent-color">Accent Color</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="accent-color"
+                    type="color"
+                    className="w-12 h-8 p-1"
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                  />
+                  <Input
+                    type="text"
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                    className="w-32"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Choose a custom accent color for buttons and interactive
+                  elements.
+                </p>
+              </div>
+
+              <Separator />
+
+              <Button onClick={handleSaveThemeSettings}>
+                Save Theme Settings
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="keyboard" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Keyboard Shortcuts</CardTitle>
+              <CardDescription>
+                Configure and view keyboard shortcuts for faster navigation.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <HotkeysManager />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default Settings;
