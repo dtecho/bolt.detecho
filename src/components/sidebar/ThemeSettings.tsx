@@ -6,6 +6,10 @@ import { Slider } from "../ui/slider";
 import { Separator } from "../ui/separator";
 import { Sun, Moon, Palette } from "lucide-react";
 
+// Storage keys
+export const THEME_STORAGE_KEY = "theme";
+export const ACCENT_COLOR_STORAGE_KEY = "accentColor";
+
 // Constants for theme settings
 export const ACCENT_COLORS = [
   { name: "Blue", value: "#0284c7" },
@@ -18,14 +22,14 @@ export const ACCENT_COLORS = [
 // Helper functions for theme storage
 export const getStoredTheme = (): string => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("theme") || "light";
+    return localStorage.getItem(THEME_STORAGE_KEY) || "light";
   }
   return "light";
 };
 
 export const setStoredTheme = (theme: string): void => {
   if (typeof window !== "undefined") {
-    localStorage.setItem("theme", theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
@@ -36,14 +40,16 @@ export const setStoredTheme = (theme: string): void => {
 
 export const getStoredAccentColor = (): string => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("accentColor") || ACCENT_COLORS[0].value;
+    return (
+      localStorage.getItem(ACCENT_COLOR_STORAGE_KEY) || ACCENT_COLORS[0].value
+    );
   }
   return ACCENT_COLORS[0].value;
 };
 
 export const setStoredAccentColor = (color: string): void => {
   if (typeof window !== "undefined") {
-    localStorage.setItem("accentColor", color);
+    localStorage.setItem(ACCENT_COLOR_STORAGE_KEY, color);
   }
 };
 

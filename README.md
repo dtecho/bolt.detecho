@@ -1,30 +1,61 @@
-# React + TypeScript + Vite
+# Bolt.DIY - AI Assistant Customization Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+Bolt.DIY is a powerful platform that allows users to create, customize, and interact with AI assistants. The platform features an intuitive interface for modifying AI personas, a code editor with real-time AI assistance, and a comprehensive chat interface with markdown support.
 
-Currently, two official plugins are available:
+## Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Persona Editor
+- Customize AI assistant tone, knowledge domains, and response style
+- Choose from preset personas (Helpful Tutor, Code Reviewer, Brainstorm Partner)
+- Save and manage custom persona configurations
+- Real-time preview of persona changes in the chat interface
 
-## Expanding the ESLint configuration
+### Code Editor
+- Integrated CodeMirror editor with syntax highlighting
+- Support for multiple programming languages
+- Real-time AI code assistance and suggestions
+- Code execution capabilities directly in the browser
+- Download and copy functionality for code snippets
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Chat Interface
+- Markdown and syntax highlighting support
+- Message history with clear conversation threading
+- Responsive design that works across devices
+- Real-time AI responses based on selected persona
 
-- Configure the top-level `parserOptions` property like this:
+### Theme Customization
+- Light/dark mode toggle
+- Accent color selection
+- Font size adjustment
+- Persistent theme settings via local storage
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+## Development
+
+### Getting Started
+```bash
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Built With
+- React + TypeScript + Vite
+- Tailwind CSS for styling
+- Shadcn UI components
+- CodeMirror for code editing
+- React Router for navigation
+- Supabase for backend services
+
+### Project Structure
+- `/src/components` - UI components organized by feature
+- `/src/contexts` - React context providers
+- `/src/hooks` - Custom React hooks
+- `/src/lib` - Utility functions and helpers
+- `/src/pages` - Main application pages/routes
+- `/src/types` - TypeScript type definitions
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.

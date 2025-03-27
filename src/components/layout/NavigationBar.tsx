@@ -1,8 +1,16 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/button";
-import { Link, useLocation } from "react-router-dom";
-import { Home, Settings, Users, MessageSquare, Code } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { NavLink as Link } from "react-router-dom";
+import {
+  Home,
+  Settings,
+  Users,
+  MessageSquare,
+  Code,
+  LayoutDashboard,
+} from "lucide-react";
 
 interface NavigationItem {
   label: string;
@@ -21,6 +29,11 @@ const defaultNavItems: NavigationItem[] = [
     label: "Home",
     path: "/",
     icon: <Home className="h-5 w-5" />,
+  },
+  {
+    label: "Dashboard",
+    path: "/dashboard",
+    icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
     label: "Chat",
