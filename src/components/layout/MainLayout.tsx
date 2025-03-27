@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import AppShell from "./AppShell";
-import ChatInterface from "@/components/chat/ChatInterface";
+import { ChatInterface } from "../chat/ChatInterface";
 import useKeyboardShortcuts from "@/hooks/useKeyboardShortcuts";
 import { useToast } from "@/components/ui/use-toast";
 import KeyboardShortcutsDialog from "@/components/ui/keyboard-shortcuts-dialog";
