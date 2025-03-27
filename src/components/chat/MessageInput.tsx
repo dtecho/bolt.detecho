@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import KeyboardShortcutsDialog from "../ui/keyboard-shortcuts-dialog";
+import VoiceInput from "./VoiceInput";
 
 interface MessageInputProps {
   onSendMessage?: (message: string) => void;
@@ -101,6 +102,7 @@ const MessageInput = ({
           />
           <div className="absolute bottom-2 left-1 sm:left-2 right-1 sm:right-2 flex items-center justify-between px-1 sm:px-2 py-1">
             <div className="flex items-center space-x-0 sm:space-x-1">
+              <VoiceInput onTranscript={(text) => setMessage(text)} />
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -129,20 +131,6 @@ const MessageInput = ({
                 >
                   <Image size={14} className="sm:h-4 sm:w-4" />
                   <span className="sr-only">Add image</span>
-                </Button>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-7 w-7 sm:h-8 sm:w-8"
-                >
-                  <Mic size={14} className="sm:h-4 sm:w-4" />
-                  <span className="sr-only">Voice input</span>
                 </Button>
               </motion.div>
               <motion.div

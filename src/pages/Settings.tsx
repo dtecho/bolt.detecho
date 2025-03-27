@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HotkeysManager from "@/components/ui/hotkeys-manager";
 import {
   Card,
   CardContent,
@@ -18,10 +19,10 @@ import { useToast } from "@/components/ui/use-toast";
 const Settings = () => {
   const { toast } = useToast();
   const { persona, updatePersona } = usePersona();
-  const [apiKey, setApiKey] = React.useState("");
-  const [darkMode, setDarkMode] = React.useState(true);
-  const [accentColor, setAccentColor] = React.useState("#7c3aed");
-  const [chatSettings, setChatSettings] = React.useState({
+  const [apiKey, setApiKey] = useState("");
+  const [darkMode, setDarkMode] = useState(true);
+  const [accentColor, setAccentColor] = useState("#7c3aed");
+  const [chatSettings, setChatSettings] = useState({
     temperature: 0.7,
     maxTokens: 1000,
     model: "gpt-4",
@@ -70,11 +71,12 @@ const Settings = () => {
       </p>
 
       <Tabs defaultValue="api" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-5 mb-8">
           <TabsTrigger value="api">API Keys</TabsTrigger>
           <TabsTrigger value="chat">Chat Settings</TabsTrigger>
           <TabsTrigger value="persona">Persona</TabsTrigger>
           <TabsTrigger value="interface">Interface</TabsTrigger>
+          <TabsTrigger value="keyboard">Keyboard</TabsTrigger>
         </TabsList>
 
         <TabsContent value="api" className="space-y-4">
@@ -257,46 +259,3 @@ const Settings = () => {
                 <div className="space-y-0.5">
                   <Label htmlFor="dark-mode">Dark Mode</Label>
                   <p className="text-sm text-muted-foreground">
-                    Enable dark mode for the interface.
-                  </p>
-                </div>
-                <Switch
-                  id="dark-mode"
-                  checked={darkMode}
-                  onCheckedChange={setDarkMode}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <Label htmlFor="accent-color">Accent Color</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="accent-color"
-                    type="color"
-                    value={accentColor}
-                    onChange={(e) => setAccentColor(e.target.value)}
-                    className="w-12 h-10 p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={accentColor}
-                    onChange={(e) => setAccentColor(e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-
-              <Button onClick={handleSaveThemeSettings}>
-                Save Interface Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-};
-
-export default Settings;

@@ -7,6 +7,7 @@ import { useRoutes } from "react-router-dom";
 import * as tempoRoutes from "tempo-routes";
 const routes = tempoRoutes.default || tempoRoutes;
 import { PersonaProvider, usePersona } from "./contexts/PersonaContext";
+import ErrorBoundary from "./components/ui/error-boundary";
 import { useToast } from "./components/ui/use-toast";
 import CodeEditorChat from "./components/editor/CodeEditorChat";
 import PersonaTestingPlayground from "./components/playground/PersonaTestingPlayground";
@@ -80,9 +81,15 @@ function AppContent() {
 
 function App() {
   return (
-    <PersonaProvider>
-      <AppContent />
-    </PersonaProvider>
+    <ErrorBoundary
+      onError={(error) => {
+        console.error("App Error:", error);
+      }}
+    >
+      <PersonaProvider>
+        <AppContent />
+      </PersonaProvider>
+    </ErrorBoundary>
   );
 }
 

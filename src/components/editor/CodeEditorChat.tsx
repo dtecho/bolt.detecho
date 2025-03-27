@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import {
   Card,
@@ -11,6 +11,7 @@ import Button from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
+import CollaborativeIndicator from "./CollaborativeIndicator";
 import MessageHistory from "@/components/chat/MessageHistory";
 import MessageInput from "@/components/chat/MessageInput";
 import { usePersona } from "@/contexts/PersonaContext";
@@ -115,9 +116,50 @@ const CodeEditorChat: React.FC<CodeEditorChatProps> = ({
   const [selectedSuggestion, setSelectedSuggestion] =
     useState<CodeSuggestion | null>(null);
   const [assistantTab, setAssistantTab] = useState<string>("suggestions");
+  const [isCollaborative, setIsCollaborative] = useState<boolean>(false);
+  const [collaborators, setCollaborators] = useState([]);
   const { persona } = usePersona();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Mock collaborators for demo purposes
+  const mockCollaborators = useMemo(
+    () => [
+      {
+        id: "user1",
+        name: "Alex Chen",
+        color: "#4f46e5",
+        isActive: true,
+      },
+      {
+        id: "user2",
+        name: "Taylor Kim",
+        color: "#0ea5e9",
+        isActive: true,
+      },
+      {
+        id: "user3",
+        name: "Jordan Smith",
+        color: "#10b981",
+        isActive: false,
+      },
+    ],
+    [],
+  );
+
+  // Set mock collaborators when collaborative mode is enabled
+  useEffect(() => {
+    if (isCollaborative) {
+      setCollaborators(mockCollaborators);
+      toast({
+        title: "Collaborative mode enabled",
+        description: "Other users can now join your editing session.",
+        duration: 3000,
+      });
+    } else {
+      setCollaborators([]);
+    }
+  }, [isCollaborative, mockCollaborators, toast]);
 
   // Listen for theme changes
   useEffect(() => {
@@ -555,6 +597,12 @@ console.log(greet('Developer'));`,
           <h2 className="text-xl font-bold">Code Editor Chat</h2>
         </div>
         <div className="flex items-center space-x-2">
+          <CollaborativeIndicator
+            collaborators={collaborators}
+            isEnabled={isCollaborative}
+            onToggle={() => setIsCollaborative(!isCollaborative)}
+            className="mr-2"
+          />
           <Button
             variant="outline"
             size="sm"
