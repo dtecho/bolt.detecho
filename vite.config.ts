@@ -9,11 +9,23 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Add empty modules for missing exports
+      "react-syntax-highlighter/dist/esm/styles/hljs/dust": path.resolve(
+        __dirname,
+        "./src/lib/empty-module.js",
+      ),
+      "lowlight/lib/core": path.resolve(__dirname, "./src/lib/empty-module.js"),
+      lowlight: path.resolve(__dirname, "./src/lib/lowlight-module.js"),
+      "@babel/runtime/helpers/esm/objectWithoutProperties": path.resolve(
+        __dirname,
+        "./src/lib/object-without-properties.js",
+      ),
     },
   },
   optimizeDeps: {
+    // Exclude problematic dependencies from optimization
+    exclude: ["react-syntax-highlighter", "lowlight", "@babel/runtime"],
     include: [
-      "react-syntax-highlighter/dist/esm/styles/prism",
       "framer-motion",
       "@radix-ui/react-tabs",
       "@codemirror/lang-html",
@@ -26,17 +38,18 @@ export default defineConfig({
       "@codemirror/theme-one-dark",
     ],
     esbuildOptions: {
-      sourcemap: true,
+      sourcemap: false,
     },
   },
   build: {
-    sourcemap: true,
+    sourcemap: false,
     commonjsOptions: {
-      sourceMap: true,
+      sourceMap: false,
+      transformMixedEsModules: true,
     },
     rollupOptions: {
       output: {
-        sourcemap: true,
+        sourcemap: false,
       },
     },
   },
