@@ -5,111 +5,86 @@ import {
 } from "@/components/sidebar/ThemeSettings";
 
 /**
- * Theme utility functions for managing theme settings across the application
+ * Get the current theme mode from localStorage
  */
+export function getThemeMode(): string | null {
+  return localStorage.getItem(THEME_STORAGE_KEY);
+}
 
 /**
- * Get the current theme mode from localStorage
- * @returns 'dark' | 'light' | null
+ * Set the theme mode in localStorage
  */
-export const getThemeMode = (): string | null => {
-  return localStorage.getItem(THEME_STORAGE_KEY);
-};
+export function setThemeMode(isDark: boolean): void {
+  localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+
+  // Apply theme to document
+  if (isDark) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}
 
 /**
  * Get the current accent color from localStorage
- * @returns color string or default color
  */
-export const getAccentColor = (): string => {
-  return (
-    localStorage.getItem(ACCENT_COLOR_STORAGE_KEY) || ACCENT_COLORS[0].value
-  );
-};
+export function getAccentColor(): string {
+  const savedColor = localStorage.getItem(ACCENT_COLOR_STORAGE_KEY);
+  return savedColor || ACCENT_COLORS[0].value; // Default to first color if not set
+}
 
 /**
- * Set the theme mode and apply it to the document
- * @param isDark boolean indicating if dark mode should be enabled
+ * Set the accent color in localStorage
  */
-export const setThemeMode = (isDark: boolean): void => {
-  // Update localStorage
-  localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
-
-  // Apply to document
-  document.documentElement.classList.toggle("dark", isDark);
-};
-
-/**
- * Set the accent color and apply it to the document
- * @param color string color value (hex)
- */
-export const setAccentColor = (color: string): void => {
-  // Update localStorage
+export function setAccentColor(color: string): void {
   localStorage.setItem(ACCENT_COLOR_STORAGE_KEY, color);
 
-  // Apply to document
+  // Apply accent color to CSS variables
   document.documentElement.style.setProperty("--accent-color", color);
-};
+}
 
 /**
- * Reset theme settings to defaults
+ * Reset all theme settings to defaults
  */
-export const resetThemeSettings = (): void => {
-  // Reset to light mode
-  setThemeMode(false);
+export function resetThemeSettings(): void {
+  localStorage.removeItem(THEME_STORAGE_KEY);
+  localStorage.removeItem(ACCENT_COLOR_STORAGE_KEY);
+
+  // Reset to light theme
+  document.documentElement.classList.remove("dark");
 
   // Reset to default accent color
-  setAccentColor(ACCENT_COLORS[0].value);
-};
+  document.documentElement.style.setProperty(
+    "--accent-color",
+    ACCENT_COLORS[0].value,
+  );
+}
 
 /**
- * Initialize theme settings from localStorage or system preferences
+ * Apply the current theme settings on page load
  */
-export const initializeThemeSettings = (): void => {
-  // Check for saved theme preference
+export function applyStoredThemeSettings(): void {
   const savedTheme = getThemeMode();
+  const savedAccentColor = getAccentColor();
 
+  // Apply theme mode
   if (savedTheme === "dark") {
     document.documentElement.classList.add("dark");
   } else if (savedTheme === "light") {
     document.documentElement.classList.remove("dark");
   } else {
-    // If no preference is saved, check for system preference
+    // If no preference is saved, check system preference
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
-    document.documentElement.classList.toggle("dark", prefersDark);
-    localStorage.setItem(THEME_STORAGE_KEY, prefersDark ? "dark" : "light");
+    if (prefersDark) {
+      document.documentElement.classList.add("dark");
+    }
   }
 
-  // Check for saved accent color
-  const savedAccentColor = getAccentColor();
+  // Apply accent color
   document.documentElement.style.setProperty(
     "--accent-color",
     savedAccentColor,
   );
-};
-
-/**
- * Setup listener for system theme changes
- */
-export const setupSystemThemeListener = (): (() => void) => {
-  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-  const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-    const savedTheme = getThemeMode();
-    // Only apply system preference if user hasn't explicitly set a preference
-    if (!savedTheme) {
-      document.documentElement.classList.toggle("dark", e.matches);
-      localStorage.setItem(THEME_STORAGE_KEY, e.matches ? "dark" : "light");
-    }
-  };
-
-  // Add listener for system theme changes
-  if (mediaQuery.addEventListener) {
-    mediaQuery.addEventListener("change", handleSystemThemeChange);
-    return () =>
-      mediaQuery.removeEventListener("change", handleSystemThemeChange);
-  }
-
-  return () => {};
-};
+}
