@@ -52,11 +52,9 @@ const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => {
-  // Ensure TabsContent is used within Tabs
+  // Ensure TabsContent is used within Tabs, but don't throw an error
+  // This allows TabsContent to be used conditionally or in more flexible layouts
   const isWithinTabs = React.useContext(TabsContext);
-  if (!isWithinTabs) {
-    throw new Error("`TabsContent` must be used within `Tabs`");
-  }
 
   return (
     <TabsPrimitive.Content
