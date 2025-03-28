@@ -47,7 +47,7 @@ import KnowledgeDomainSelector from "./KnowledgeDomainSelector";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vs } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { vscDarkPlus as vsDark } from "react-syntax-highlighter/dist/esm/styles/prism-vsc-dark-plus";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface PersonaCreationWizardProps {
   onComplete: (persona: PersonaConfig) => void;
@@ -977,7 +977,7 @@ const PersonaCreationWizard: React.FC<PersonaCreationWizardProps> = ({
                         const match = /language-(\w+)/.exec(className || "");
                         return !inline && match ? (
                           <SyntaxHighlighter
-                            style={isDarkMode ? vsDark : vs}
+                            style={isDarkMode ? vscDarkPlus : vs}
                             language={match[1]}
                             PreTag="div"
                             className="rounded-md border border-muted my-2 text-xs"
