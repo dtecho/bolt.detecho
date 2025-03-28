@@ -12,7 +12,18 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ["@vite/client"],
+    include: [
+      "react-syntax-highlighter/dist/esm/styles/prism",
+      "framer-motion",
+      "@radix-ui/react-tabs",
+      "@codemirror/lang-html",
+      "@codemirror/lang-css",
+      "@codemirror/lang-javascript",
+      "@codemirror/lang-json",
+    ],
+    esbuildOptions: {
+      sourcemap: true,
+    },
   },
   build: {
     sourcemap: true,
