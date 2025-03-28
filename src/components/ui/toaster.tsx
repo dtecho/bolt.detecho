@@ -39,5 +39,4 @@ export {
   ToastTitle,
   ToastDescription,
   ToastClose,
-  Toaster,
 };
