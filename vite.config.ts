@@ -20,6 +20,10 @@ export default defineConfig({
       "@codemirror/lang-css",
       "@codemirror/lang-javascript",
       "@codemirror/lang-json",
+      "@codemirror/state",
+      "@codemirror/view",
+      "@codemirror/basic-setup",
+      "@codemirror/theme-one-dark",
     ],
     esbuildOptions: {
       sourcemap: true,
@@ -27,6 +31,9 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    commonjsOptions: {
+      sourceMap: true,
+    },
   },
   server: {
     // @ts-ignore
