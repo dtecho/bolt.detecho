@@ -45,9 +45,9 @@ import {
 } from "@/contexts/PersonaContext";
 import KnowledgeDomainSelector from "./KnowledgeDomainSelector";
 import ReactMarkdown from "react-markdown";
-import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/prism";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vs } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { vscDarkPlus as vsDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vscDarkPlus as vsDark } from "react-syntax-highlighter/dist/esm/styles/prism-vsc-dark-plus";
 
 interface PersonaCreationWizardProps {
   onComplete: (persona: PersonaConfig) => void;

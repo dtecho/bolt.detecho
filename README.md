@@ -41,6 +41,7 @@ Bolt.DIY is a powerful platform that allows users to create, customize, and inte
 - Real-time AI responses based on selected persona
 - AI response visualization for better understanding
 - Code snippet support with syntax highlighting
+- Voice input capabilities for hands-free interaction
 - Ability to send code from editor to chat for analysis
 
 ### Theme Customization
@@ -71,6 +72,13 @@ Bolt.DIY is a powerful platform that allows users to create, customize, and inte
 - Automatic periodic saving of changes
 - Manual version saving with annotations
 
+### Collaborative Features
+- Real-time collaboration indicators
+- Shared editing capabilities
+- Persona sharing between team members
+- Version control for collaborative work
+- Team-based knowledge domain management
+
 ## Development
 
 ### Getting Started
@@ -97,9 +105,9 @@ npm run dev
 
 ### Project Structure
 - `/src/components` - UI components organized by feature
-  - `/chat` - Chat interface components (MessageHistory, MessageInput, ChatInterface)
+  - `/chat` - Chat interface components (MessageHistory, MessageInput, ChatInterface, VoiceInput)
   - `/dev-environment` - Development environment components (Terminal, FileExplorer, DevEnvironment)
-  - `/editor` - Code editor components (CodeEditorChat)
+  - `/editor` - Code editor components (CodeEditorChat, CollaborativeIndicator)
   - `/sidebar` - Sidebar and persona management components (PersonaEditor, PersonaPresets, ThemeSettings)
   - `/ui` - Reusable UI components based on Shadcn UI
   - `/visualization` - AI response visualization components (AIResponseVisualizer)
@@ -119,3 +127,9 @@ npm run dev
 - `/code-editor` - CodeMirror editor with AI assistance for code development
 - `/persona-testing` - Playground for testing persona configurations
 - `/dev-environment` - Development environment with terminal and file explorer
+
+## Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
