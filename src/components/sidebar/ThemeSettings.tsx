@@ -55,7 +55,7 @@ export const setStoredAccentColor = (color: string): void => {
   }
 };
 
-const ThemeSettings = () => {
+export const ThemeSettings = () => {
   const [theme, setTheme] = React.useState<"light" | "dark">(
     () => getStoredTheme() as "light" | "dark",
   );

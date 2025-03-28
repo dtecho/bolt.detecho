@@ -17,6 +17,6 @@ export {
   Footer,
   ContentArea,
   NavigationBar,
+  SidebarComponent as Sidebar,
 };
-export { SidebarComponent as Sidebar };
 export default Layout;
