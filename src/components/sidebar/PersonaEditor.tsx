@@ -36,6 +36,8 @@ import {
   Sparkles,
   Check,
   FileJson,
+  Info,
+  HelpCircle,
 } from "lucide-react";
 import KnowledgeDomainSelector from "./KnowledgeDomainSelector";
 import {
@@ -67,6 +69,12 @@ import ReactMarkdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { vs } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { vscDarkPlus as vsDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface PersonaEditorProps {
   onSave?: (persona: PersonaConfig) => void;
@@ -376,7 +384,21 @@ const PersonaEditor = React.memo(
 
             <CardContent className="space-y-4 pb-0 overflow-y-auto">
               <div className="space-y-2">
-                <Label htmlFor="preset-persona">Preset Personas</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="preset-persona">Preset Personas</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Start with a pre-configured persona as a foundation
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Select onValueChange={handlePresetSelect}>
                   <SelectTrigger id="preset-persona">
                     <SelectValue placeholder="Select a preset persona" />
@@ -394,7 +416,22 @@ const PersonaEditor = React.memo(
               {savedPersonas.length > 0 && (
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label htmlFor="saved-persona">Your Saved Personas</Label>
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="saved-persona">Your Saved Personas</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              Load one of your previously saved persona
+                              configurations
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -438,7 +475,22 @@ const PersonaEditor = React.memo(
 
                 <TabsContent value="basic" className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="persona-name">Name</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="persona-name">Name</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              Give your persona a descriptive name that reflects
+                              its purpose
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Input
                       id="persona-name"
                       value={persona.name}
@@ -447,7 +499,21 @@ const PersonaEditor = React.memo(
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="persona-description">Description</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="persona-description">Description</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              Briefly describe what this persona specializes in
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Textarea
                       id="persona-description"
                       value={persona.description}
@@ -458,7 +524,21 @@ const PersonaEditor = React.memo(
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="persona-tone">Tone</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="persona-tone">Tone</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              Select how the AI should sound when responding
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Select
                       value={persona.tone}
                       onValueChange={(value) => handleChange("tone", value)}
@@ -483,7 +563,25 @@ const PersonaEditor = React.memo(
 
                 <TabsContent value="knowledge" className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="knowledge-domains">Knowledge Domains</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="knowledge-domains">
+                        Knowledge Domains
+                      </Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p>
+                              Areas of expertise the AI should prioritize. Drag
+                              to reorder - domains at the top have higher
+                              priority.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <p className="text-xs text-muted-foreground mb-2">
                       Add domains of knowledge the AI should focus on. Order
                       matters - domains listed first have higher priority.
@@ -500,8 +598,23 @@ const PersonaEditor = React.memo(
                 <TabsContent value="style" className="space-y-4 mt-4">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label htmlFor="verbosity-slider">Verbosity</Label>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-1">
+                          <Label htmlFor="verbosity-slider">Verbosity</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Controls how detailed the AI's responses will
+                                  be
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                         <span className="text-xs text-muted-foreground">
                           {persona.verbosity}%
                         </span>
@@ -519,8 +632,23 @@ const PersonaEditor = React.memo(
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label htmlFor="creativity-slider">Creativity</Label>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-1">
+                          <Label htmlFor="creativity-slider">Creativity</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Higher values encourage more novel and diverse
+                                  responses
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                         <span className="text-xs text-muted-foreground">
                           {persona.creativity}%
                         </span>
@@ -538,8 +666,23 @@ const PersonaEditor = React.memo(
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label htmlFor="formality-slider">Formality</Label>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-1">
+                          <Label htmlFor="formality-slider">Formality</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Controls how formal or casual the AI's
+                                  language will be
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                         <span className="text-xs text-muted-foreground">
                           {persona.formality}%
                         </span>
@@ -559,12 +702,27 @@ const PersonaEditor = React.memo(
 
                   <div className="space-y-4 pt-2">
                     <div className="flex items-center justify-between">
-                      <Label
-                        htmlFor="use-emojis-switch"
-                        className="cursor-pointer"
-                      >
-                        Use Emojis
-                      </Label>
+                      <div className="flex items-center gap-1">
+                        <Label
+                          htmlFor="use-emojis-switch"
+                          className="cursor-pointer"
+                        >
+                          Use Emojis
+                        </Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                When enabled, the AI will include emojis in
+                                responses
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                       <Switch
                         id="use-emojis-switch"
                         checked={persona.useEmojis}
@@ -575,12 +733,27 @@ const PersonaEditor = React.memo(
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <Label
-                        htmlFor="use-code-examples-switch"
-                        className="cursor-pointer"
-                      >
-                        Use Code Examples
-                      </Label>
+                      <div className="flex items-center gap-1">
+                        <Label
+                          htmlFor="use-code-examples-switch"
+                          className="cursor-pointer"
+                        >
+                          Use Code Examples
+                        </Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                When enabled, the AI will include code snippets
+                                when appropriate
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                       <Switch
                         id="use-code-examples-switch"
                         checked={persona.useCodeExamples}
@@ -594,7 +767,22 @@ const PersonaEditor = React.memo(
 
                 <TabsContent value="advanced" className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="response-style">Response Style</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="response-style">Response Style</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              The overall approach the AI will take when
+                              responding
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Select
                       value={persona.responseStyle}
                       onValueChange={(value) =>
@@ -615,9 +803,25 @@ const PersonaEditor = React.memo(
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="custom-instructions">
-                      Custom Instructions
-                    </Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="custom-instructions">
+                        Custom Instructions
+                      </Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p>
+                              Add specific guidance for how the AI should
+                              respond. These instructions will directly
+                              influence the AI's behavior.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Textarea
                       id="custom-instructions"
                       value={persona.customInstructions}
