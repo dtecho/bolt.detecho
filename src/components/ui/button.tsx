@@ -1,6 +1,9 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva as cvaMaker, type VariantProps } from "class-variance-authority";
+
+// Rename the import to fix the export issue
+const cva = cvaMaker;
 
 import { cn } from "@/lib/utils";
 

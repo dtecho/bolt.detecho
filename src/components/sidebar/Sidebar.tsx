@@ -11,7 +11,7 @@ import {
   Settings,
 } from "lucide-react";
 import PersonaEditor from "./PersonaEditor";
-import ThemeSettings from "./ThemeSettings";
+import { ThemeSettings } from "./ThemeSettings";
 import PersonaPresets from "./PersonaPresets";
 import {
   Tooltip,
