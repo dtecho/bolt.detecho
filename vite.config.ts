@@ -34,6 +34,11 @@ export default defineConfig({
     commonjsOptions: {
       sourceMap: true,
     },
+    rollupOptions: {
+      output: {
+        sourcemap: true,
+      },
+    },
   },
   server: {
     // @ts-ignore
