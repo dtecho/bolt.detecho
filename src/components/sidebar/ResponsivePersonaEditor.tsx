@@ -339,17 +339,28 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
   });
   const [isMobile, setIsMobile] = useState(false);
 
-  // Check if we're on mobile
+  // Check if we're on mobile with improved breakpoints
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      // Use standard breakpoints: xs < 640px, sm < 768px
+      setIsMobile(window.innerWidth < 640);
     };
 
+    // Initial check
     checkMobile();
-    window.addEventListener("resize", checkMobile);
+
+    // Debounced resize handler for better performance
+    let resizeTimer: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(checkMobile, 100);
+    };
+
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(resizeTimer);
     };
   }, []);
 
@@ -535,12 +546,15 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
     return selected ? selected.name : "";
   };
 
-  // Render mobile menu
+  // Render mobile menu with improved touch interactions
   const renderMobileMenu = () => {
     return (
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetContent side="left" className="w-[85vw] sm:w-[385px] p-0">
-          <SheetHeader className="p-4 border-b">
+        <SheetContent
+          side="left"
+          className="w-[90vw] sm:w-[385px] p-0 overflow-hidden"
+        >
+          <SheetHeader className="p-4 border-b sticky top-0 bg-background z-10">
             <SheetTitle className="text-left flex items-center">
               <Sparkles className="h-5 w-5 mr-2 text-primary" />
               Persona Editor
@@ -550,16 +564,28 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-10rem)]">
-            <div className="space-y-2">
-              <Label htmlFor="mobile-preset-persona">Preset Personas</Label>
+          <div className="p-4 space-y-5 overflow-y-auto max-h-[calc(100vh-10rem)] pb-24">
+            <div className="space-y-3">
+              <Label
+                htmlFor="mobile-preset-persona"
+                className="text-base font-medium"
+              >
+                Preset Personas
+              </Label>
               <Select onValueChange={handlePresetSelect}>
-                <SelectTrigger id="mobile-preset-persona">
+                <SelectTrigger
+                  id="mobile-preset-persona"
+                  className="h-11 text-base"
+                >
                   <SelectValue placeholder="Select a preset persona" />
                 </SelectTrigger>
                 <SelectContent>
                   {presetPersonas.map((preset) => (
-                    <SelectItem key={preset.id} value={preset.id || ""}>
+                    <SelectItem
+                      key={preset.id}
+                      value={preset.id || ""}
+                      className="text-base py-2.5"
+                    >
                       {preset.name}
                     </SelectItem>
                   ))}
@@ -568,9 +594,12 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
             </div>
 
             {savedPersonas.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="mobile-saved-persona">
+                  <Label
+                    htmlFor="mobile-saved-persona"
+                    className="text-base font-medium"
+                  >
                     Your Saved Personas
                   </Label>
                   <Button
@@ -580,7 +609,7 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
                       setIsMobileMenuOpen(false);
                       setShowManager(true);
                     }}
-                    className="h-6 px-2 text-xs"
+                    className="h-8 px-3 text-sm"
                   >
                     View All
                   </Button>
@@ -589,14 +618,21 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
                   value={selectedSavedPersona}
                   onValueChange={handleSavedPersonaSelect}
                 >
-                  <SelectTrigger id="mobile-saved-persona">
+                  <SelectTrigger
+                    id="mobile-saved-persona"
+                    className="h-11 text-base"
+                  >
                     <SelectValue placeholder="Select a saved persona">
                       {getSelectedPersonaName() || "Select a saved persona"}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {savedPersonas.map((saved) => (
-                      <SelectItem key={saved.id} value={saved.id || ""}>
+                      <SelectItem
+                        key={saved.id}
+                        value={saved.id || ""}
+                        className="text-base py-2.5"
+                      >
                         {saved.name}
                       </SelectItem>
                     ))}
@@ -605,66 +641,76 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
               </div>
             )}
 
-            <div className="flex flex-col space-y-2 pt-4">
-              <Button variant="outline" size="sm" onClick={handleImportClick}>
-                <FileJson className="mr-2 h-4 w-4" />
+            <div className="flex flex-col space-y-3 pt-4">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleImportClick}
+                className="h-12 text-base w-full justify-start"
+              >
+                <FileJson className="mr-3 h-5 w-5" />
                 Import Persona
               </Button>
 
               <Button
                 variant="outline"
-                size="sm"
+                size="lg"
                 onClick={handleExportCurrentPersona}
+                className="h-12 text-base w-full justify-start"
               >
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-3 h-5 w-5" />
                 Export Current
               </Button>
 
               {selectedSavedPersona && (
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={handleExportSavedPersona}
+                  className="h-12 text-base w-full justify-start"
                 >
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download className="mr-3 h-5 w-5" />
                   Export Selected
                 </Button>
               )}
 
               <Button
                 variant={showPreview ? "default" : "outline"}
-                size="sm"
+                size="lg"
                 onClick={() => {
                   setShowPreview(!showPreview);
                   setIsMobileMenuOpen(false);
                 }}
+                className="h-12 text-base w-full justify-start"
               >
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="mr-3 h-5 w-5" />
                 {showPreview ? "Hide Preview" : "Show Preview"}
               </Button>
             </div>
           </div>
 
-          <SheetFooter className="p-4 border-t">
-            <div className="flex w-full justify-between">
+          <SheetFooter className="p-4 border-t sticky bottom-0 bg-background z-10 mt-auto">
+            <div className="flex w-full justify-between gap-3">
               <Button
                 variant="outline"
-                size="sm"
+                size="lg"
                 onClick={() => setIsMobileMenuOpen(false)}
+                className="flex-1 h-12"
               >
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                Back to Editor
+                <ChevronLeft className="mr-2 h-5 w-5" />
+                Back
               </Button>
 
               <Button
-                size="sm"
+                size="lg"
                 onClick={() => {
                   handleSave();
                   setIsMobileMenuOpen(false);
                 }}
+                className="flex-1 h-12"
               >
-                <Save className="mr-2 h-4 w-4" />
-                Apply Changes
+                <Save className="mr-2 h-5 w-5" />
+                Apply
               </Button>
             </div>
           </SheetFooter>
@@ -692,7 +738,7 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
 
   return (
     <Card className={`w-full h-full bg-background border-border ${className}`}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 sticky top-0 bg-background z-10">
         <div className="flex justify-between items-center">
           <div>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -701,8 +747,9 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="mr-2 h-8 w-8"
+                    className="mr-2 h-10 w-10 -ml-1.5 touch-manipulation"
                     onClick={() => setIsMobileMenuOpen(true)}
+                    aria-label="Open menu"
                   >
                     <Menu className="h-5 w-5" />
                   </Button>
@@ -714,18 +761,33 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
               Customize how your AI assistant behaves and responds
             </CardDescription>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowManager(true)}
-            className="hidden sm:flex"
-          >
-            Manage Personas
-          </Button>
+          {isMobile ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowManager(true)}
+              className="h-9 px-3 touch-manipulation"
+              aria-label="Manage Personas"
+            >
+              Manage
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowManager(true)}
+              className="hidden sm:flex"
+            >
+              Manage Personas
+            </Button>
+          )}
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4 pb-0 overflow-y-auto">
+      <CardContent
+        className="space-y-4 pb-0 overflow-y-auto"
+        style={{ scrollbarWidth: "thin" }}
+      >
         {!isMobile && (
           <>
             <div className="space-y-2">
@@ -780,47 +842,112 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="basic">Basic</TabsTrigger>
-            <TabsTrigger value="knowledge">Knowledge</TabsTrigger>
-            <TabsTrigger value="style">Style</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+          <TabsList className="grid grid-cols-4 w-full sticky top-16 bg-background z-10">
+            <TabsTrigger
+              value="basic"
+              className={isMobile ? "py-3 text-sm" : ""}
+            >
+              Basic
+            </TabsTrigger>
+            <TabsTrigger
+              value="knowledge"
+              className={isMobile ? "py-3 text-sm" : ""}
+            >
+              Knowledge
+            </TabsTrigger>
+            <TabsTrigger
+              value="style"
+              className={isMobile ? "py-3 text-sm" : ""}
+            >
+              Style
+            </TabsTrigger>
+            <TabsTrigger
+              value="advanced"
+              className={isMobile ? "py-3 text-sm" : ""}
+            >
+              Advanced
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="basic" className="space-y-4 mt-4">
+          <TabsContent value="basic" className="space-y-5 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="persona-name">Name</Label>
+              <Label
+                htmlFor="persona-name"
+                className={isMobile ? "text-base font-medium" : ""}
+              >
+                Name
+              </Label>
               <Input
                 id="persona-name"
                 value={persona.name}
                 onChange={(e) => handleChange("name", e.target.value)}
+                className={isMobile ? "h-12 text-base px-4" : ""}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="persona-description">Description</Label>
+              <Label
+                htmlFor="persona-description"
+                className={isMobile ? "text-base font-medium" : ""}
+              >
+                Description
+              </Label>
               <Textarea
                 id="persona-description"
                 value={persona.description}
                 onChange={(e) => handleChange("description", e.target.value)}
+                className={isMobile ? "text-base px-4 py-3 min-h-[100px]" : ""}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="persona-tone">Tone</Label>
+              <Label
+                htmlFor="persona-tone"
+                className={isMobile ? "text-base font-medium" : ""}
+              >
+                Tone
+              </Label>
               <Select
                 value={persona.tone}
                 onValueChange={(value) => handleChange("tone", value)}
               >
-                <SelectTrigger id="persona-tone">
+                <SelectTrigger
+                  id="persona-tone"
+                  className={isMobile ? "h-12 text-base" : ""}
+                >
                   <SelectValue placeholder="Select tone" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="friendly">Friendly</SelectItem>
-                  <SelectItem value="professional">Professional</SelectItem>
-                  <SelectItem value="casual">Casual</SelectItem>
-                  <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
-                  <SelectItem value="educational">Educational</SelectItem>
+                  <SelectItem
+                    value="friendly"
+                    className={isMobile ? "text-base py-2.5" : ""}
+                  >
+                    Friendly
+                  </SelectItem>
+                  <SelectItem
+                    value="professional"
+                    className={isMobile ? "text-base py-2.5" : ""}
+                  >
+                    Professional
+                  </SelectItem>
+                  <SelectItem
+                    value="casual"
+                    className={isMobile ? "text-base py-2.5" : ""}
+                  >
+                    Casual
+                  </SelectItem>
+                  <SelectItem
+                    value="enthusiastic"
+                    className={isMobile ? "text-base py-2.5" : ""}
+                  >
+                    Enthusiastic
+                  </SelectItem>
+                  <SelectItem
+                    value="educational"
+                    className={isMobile ? "text-base py-2.5" : ""}
+                  >
+                    Educational
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -993,22 +1120,36 @@ const ResponsivePersonaEditor: React.FC<ResponsivePersonaEditorProps> = ({
           className="hidden"
         />
 
-        {/* Mobile action buttons */}
+        {/* Mobile action buttons with improved touch targets */}
         {isMobile ? (
-          <div className="flex justify-between w-full">
-            <Button variant="outline" size="sm" onClick={handleReset}>
-              <RefreshCw className="mr-2 h-4 w-4" />
+          <div className="flex justify-between w-full sticky bottom-0 bg-background pt-4 pb-2 border-t mt-4 z-10">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleReset}
+              className="h-12 px-4 touch-manipulation"
+            >
+              <RefreshCw className="mr-2 h-5 w-5" />
               Reset
             </Button>
 
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm" onClick={handleSaveAsNew}>
-                <BookmarkPlus className="mr-2 h-4 w-4" />
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleSaveAsNew}
+                className="h-12 px-4 touch-manipulation"
+              >
+                <BookmarkPlus className="mr-2 h-5 w-5" />
                 Save As
               </Button>
 
-              <Button size="sm" onClick={handleSave}>
-                <Save className="mr-2 h-4 w-4" />
+              <Button
+                size="lg"
+                onClick={handleSave}
+                className="h-12 px-4 touch-manipulation"
+              >
+                <Save className="mr-2 h-5 w-5" />
                 Apply
               </Button>
             </div>

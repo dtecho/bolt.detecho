@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import MessageHistory from "./MessageHistory";
 import MessageInput from "./MessageInput";
+import ChatbotEnhancements from "./ChatbotEnhancements";
 import { Bot } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -28,6 +29,18 @@ export interface ChatbotProps {
   isLoading?: boolean;
   theme?: "light" | "dark" | "system";
   accentColor?: string;
+  showEnhancements?: boolean;
+  enhancementsPosition?: "top" | "bottom";
+  onVoiceInput?: () => void;
+  onAttachFile?: () => void;
+  onAttachImage?: () => void;
+  onToggleAI?: () => void;
+  onOpenSettings?: () => void;
+  showVoiceInput?: boolean;
+  showAttachments?: boolean;
+  showAIToggle?: boolean;
+  showSettings?: boolean;
+  isAIEnabled?: boolean;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -49,6 +62,18 @@ const Chatbot: React.FC<ChatbotProps> = ({
   isLoading = false,
   theme = "system",
   accentColor,
+  showEnhancements = true,
+  enhancementsPosition = "top",
+  onVoiceInput = () => {},
+  onAttachFile = () => {},
+  onAttachImage = () => {},
+  onToggleAI = () => {},
+  onOpenSettings = () => {},
+  showVoiceInput = true,
+  showAttachments = true,
+  showAIToggle = true,
+  showSettings = true,
+  isAIEnabled = true,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isTyping, setIsTyping] = useState(false);
@@ -179,6 +204,23 @@ const Chatbot: React.FC<ChatbotProps> = ({
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
+        {showEnhancements && enhancementsPosition === "top" && (
+          <div className="px-4 pt-4">
+            <ChatbotEnhancements
+              onVoiceInput={onVoiceInput}
+              onAttachFile={onAttachFile}
+              onAttachImage={onAttachImage}
+              onToggleAI={onToggleAI}
+              onOpenSettings={onOpenSettings}
+              showVoiceInput={showVoiceInput}
+              showAttachments={showAttachments}
+              showAIToggle={showAIToggle}
+              showSettings={showSettings}
+              isAIEnabled={isAIEnabled}
+              position="top"
+            />
+          </div>
+        )}
         <div className="flex-1 overflow-hidden">
           <MessageHistory
             messages={messages}
@@ -207,6 +249,23 @@ const Chatbot: React.FC<ChatbotProps> = ({
               />
             </div>
           </motion.div>
+        )}
+        {showEnhancements && enhancementsPosition === "bottom" && (
+          <div className="px-4 pb-2">
+            <ChatbotEnhancements
+              onVoiceInput={onVoiceInput}
+              onAttachFile={onAttachFile}
+              onAttachImage={onAttachImage}
+              onToggleAI={onToggleAI}
+              onOpenSettings={onOpenSettings}
+              showVoiceInput={showVoiceInput}
+              showAttachments={showAttachments}
+              showAIToggle={showAIToggle}
+              showSettings={showSettings}
+              isAIEnabled={isAIEnabled}
+              position="bottom"
+            />
+          </div>
         )}
         <div className="border-t">
           <MessageInput
