@@ -97,7 +97,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
     return () => {
       // Reset to system preference on unmount
-      if (theme !== "system") {
+      if (theme === "dark" || theme === "light") {
         const prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)",
         ).matches;
